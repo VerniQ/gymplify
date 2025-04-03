@@ -99,7 +99,7 @@ BEGIN
             'CREATE TABLE TRAINER_SESSIONS (
                 schedule_id NUMBER PRIMARY KEY,
                 trainer_id NUMBER,
-                date DATE,
+                session_date DATE,
                 start_time TIMESTAMP,
                 end_time TIMESTAMP,
                 CONSTRAINT fk_session_trainer FOREIGN KEY (trainer_id) REFERENCES TRAINERS(trainer_id)

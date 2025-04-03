@@ -1,4 +1,7 @@
 CREATE OR REPLACE PROCEDURE prc_initialize_database AS
+
+    v_success BOOLEAN;
+
     FUNCTION fn_add_table(
         p_sql IN VARCHAR2,
         p_table_name VARCHAR2
@@ -24,7 +27,6 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
             RETURN FALSE;
     END fn_add_table;
 
-    v_success BOOLEAN;
 BEGIN
     v_success := fn_add_table(
             'CREATE TABLE USERS (
@@ -55,7 +57,7 @@ BEGIN
             'CREATE TABLE EXERCISES (
                 exercise_id NUMBER PRIMARY KEY,
                 name VARCHAR2(255),
-                description TEXT,
+                description CLOB,
                 muscle_group VARCHAR2(100)
             )',
             'EXERCISES'
@@ -98,8 +100,8 @@ BEGIN
                 schedule_id NUMBER PRIMARY KEY,
                 trainer_id NUMBER,
                 date DATE,
-                start_time TIME,
-                end_time TIME,
+                start_time TIMESTAMP,
+                end_time TIMESTAMP,
                 CONSTRAINT fk_session_trainer FOREIGN KEY (trainer_id) REFERENCES TRAINERS(trainer_id)
             )',
             'TRAINER_SESSIONS'
@@ -134,3 +136,4 @@ EXCEPTION
     WHEN OTHERS THEN
         DBMS_OUTPUT.PUT_LINE('Error in database initialization: ' || SQLERRM);
 END prc_initialize_database;
+/

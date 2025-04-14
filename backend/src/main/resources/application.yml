@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1
+    username: gymplify
+    password: gymplify
+    driver-class-name: oracle.jdbc.OracleDriver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    database-platform: ""  # leave empty if it was blank
+    show-sql: false
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+
+logging:
+  level:
+    org:
+      springframework:
+        jdbc:
+          core: DEBUG
+jwt:
+  secret: sCZNSm9T6zwiFWiHsfnbJAIsjLjv6f9dK9IHSGLTl4o7BIUYWv3iMca5DvSqkcXU #random generated secret
+  expiration: 86400000

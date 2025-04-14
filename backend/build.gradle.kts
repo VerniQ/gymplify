@@ -40,8 +40,24 @@ dependencies {
 
     // Security Test
     testImplementation("org.springframework.security:spring-security-test")
+
+    //BCrypt
+    implementation("org.mindrot:jbcrypt:0.4")
+
+    //Lombok
+    compileOnly("org.projectlombok:lombok:1.18.30")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
 }
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-parameters")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }

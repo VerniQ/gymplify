@@ -1,7 +1,6 @@
--- Sekwencja dla grup mięśniowych
+
 CREATE SEQUENCE muscle_groups_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
--- Procedura dodająca grupę mięśniową
 CREATE OR REPLACE PROCEDURE prc_add_muscle_group(
     p_group_name IN VARCHAR2,
     p_description IN CLOB,

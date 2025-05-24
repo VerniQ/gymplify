@@ -1,6 +1,6 @@
 CREATE SEQUENCE personal_plans_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
-CREATE OR REPLACE PROCEDURE AssignPlanToUser (
+CREATE OR REPLACE PROCEDURE prc_AssignPlanToUser (
     p_trainer_id  IN personal_plans.trainer_id%TYPE,
     p_user_id     IN personal_plans.user_id%TYPE,
     p_plan_id     IN personal_plans.plan_id%TYPE,
@@ -16,5 +16,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END AssignPlanToUser;
+END prc_AssignPlanToUser;
 /

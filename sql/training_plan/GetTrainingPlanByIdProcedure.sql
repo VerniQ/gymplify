@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetTrainingPlanById (
+CREATE OR REPLACE PROCEDURE prc_GetTrainingPlanById (
     p_plan_id     IN training_plans.plan_id%TYPE,
     p_record_cursor OUT SYS_REFCURSOR
 )
@@ -8,5 +8,5 @@ BEGIN
         SELECT plan_id, name
         FROM training_plans
         WHERE plan_id = p_plan_id;
-END GetTrainingPlanById;
+END prc_GetTrainingPlanById;
 /

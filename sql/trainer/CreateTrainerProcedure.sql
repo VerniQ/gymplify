@@ -13,7 +13,6 @@ CREATE OR REPLACE PROCEDURE prc_create_trainer(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy użytkownik istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM USERS
@@ -24,7 +23,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Sprawdź czy użytkownik nie jest już trenerem
     SELECT COUNT(*)
     INTO v_count
     FROM TRAINERS
@@ -35,7 +33,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Wstaw nowego trenera
     INSERT INTO TRAINERS (trainer_id, user_id, name, surname, specialization, contact)
     VALUES (trainers_seq.NEXTVAL, p_user_id, p_name, p_surname, p_specialization, p_contact)
     RETURNING trainer_id INTO p_trainer_id;

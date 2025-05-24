@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetExercisesForPlan (
+CREATE OR REPLACE PROCEDURE prc_GetExercisesForPlan (
     p_plan_id     IN training_exercise.plan_id%TYPE,
     p_records_cursor OUT SYS_REFCURSOR
 )
@@ -10,5 +10,5 @@ BEGIN
         JOIN exercises e ON te.exercise_id = e.exercise_id
         WHERE te.plan_id = p_plan_id
         ORDER BY e.name;
-END GetExercisesForPlan;
+END prc_GetExercisesForPlan;
 /

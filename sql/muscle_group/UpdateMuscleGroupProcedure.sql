@@ -8,7 +8,6 @@ CREATE OR REPLACE PROCEDURE prc_update_muscle_group(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy grupa mięśniowa istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM MUSCLE_GROUPS
@@ -19,7 +18,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Aktualizuj grupę mięśniową
     UPDATE MUSCLE_GROUPS
     SET group_name = p_group_name,
         description = p_description

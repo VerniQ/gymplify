@@ -1,6 +1,6 @@
 CREATE SEQUENCE training_plans_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
-CREATE OR REPLACE PROCEDURE CreateTrainingPlan (
+CREATE OR REPLACE PROCEDURE prc_CreateTrainingPlan (
     p_name        IN training_plans.name%TYPE,
     p_plan_id     OUT training_plans.plan_id%TYPE
 )
@@ -14,5 +14,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END CreateTrainingPlan;
+END prc_CreateTrainingPlan;
 /

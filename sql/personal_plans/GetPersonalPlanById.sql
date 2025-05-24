@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetPersonalPlanById (
+CREATE OR REPLACE PROCEDURE prc_GetPersonalPlanById (
     p_personal_plan_id IN personal_plans.personal_plan_id%TYPE,
     p_record_cursor OUT SYS_REFCURSOR
 )
@@ -11,5 +11,5 @@ BEGIN
         JOIN trainers t ON pp.trainer_id = t.trainer_id
         JOIN training_plans tp ON pp.plan_id = tp.plan_id
         WHERE pp.personal_plan_id = p_personal_plan_id;
-END GetPersonalPlanById;
+END prc_GetPersonalPlanById;
 /

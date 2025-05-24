@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetWeightMeasurementById (
+CREATE OR REPLACE PROCEDURE prc_GetWeightMeasurementById (
     p_measurement_id IN weight_measurements.measurement_id%TYPE,
     p_record_cursor  OUT SYS_REFCURSOR
 )
@@ -8,5 +8,5 @@ BEGIN
         SELECT measurement_id, user_id, measurement_date, weight
         FROM weight_measurements
         WHERE measurement_id = p_measurement_id;
-END GetWeightMeasurementById;
+END prc_GetWeightMeasurementById;
 /

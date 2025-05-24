@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE AddExerciseToPlan (
+CREATE OR REPLACE PROCEDURE prc_AddExerciseToPlan (
     p_plan_id     IN training_exercise.plan_id%TYPE,
     p_exercise_id IN training_exercise.exercise_id%TYPE
 )
@@ -13,5 +13,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END AddExerciseToPlan;
+END prc_AddExerciseToPlan;
 /

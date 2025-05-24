@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE ListAllPersonalPlans (
+CREATE OR REPLACE PROCEDURE prc_ListAllPersonalPlans (
     p_records_cursor OUT SYS_REFCURSOR
 )
 AS
@@ -10,5 +10,5 @@ BEGIN
         JOIN trainers t ON pp.trainer_id = t.trainer_id
         JOIN training_plans tp ON pp.plan_id = tp.plan_id
         ORDER BY u.username, tp.name;
-END ListAllPersonalPlans;
+END prc_ListAllPersonalPlans;
 /

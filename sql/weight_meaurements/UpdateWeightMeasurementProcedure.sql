@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UpdateWeightMeasurement (
+CREATE OR REPLACE PROCEDURE prc_UpdateWeightMeasurement (
     p_measurement_id    IN weight_measurements.measurement_id%TYPE,
     p_measurement_date  IN weight_measurements.measurement_date%TYPE,
     p_weight            IN weight_measurements.weight%TYPE
@@ -14,5 +14,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UpdateWeightMeasurement;
+END prc_UpdateWeightMeasurement;
 /

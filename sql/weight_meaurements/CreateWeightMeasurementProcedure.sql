@@ -1,6 +1,6 @@
 CREATE SEQUENCE weight_measurements_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
 
-CREATE OR REPLACE PROCEDURE CreateWeightMeasurement (
+CREATE OR REPLACE PROCEDURE prc_CreateWeightMeasurement (
     p_user_id           IN weight_measurements.user_id%TYPE,
     p_measurement_date  IN weight_measurements.measurement_date%TYPE,
     p_weight            IN weight_measurements.weight%TYPE,
@@ -16,5 +16,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END CreateWeightMeasurement;
+END prc_CreateWeightMeasurement;
 /

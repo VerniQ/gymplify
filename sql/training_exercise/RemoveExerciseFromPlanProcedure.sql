@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE RemoveExerciseFromPlan (
+CREATE OR REPLACE PROCEDURE prc_RemoveExerciseFromPlan (
     p_plan_id     IN training_exercise.plan_id%TYPE,
     p_exercise_id IN training_exercise.exercise_id%TYPE
 )
@@ -11,5 +11,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END RemoveExerciseFromPlan;
+END prc_RemoveExerciseFromPlan;
 /

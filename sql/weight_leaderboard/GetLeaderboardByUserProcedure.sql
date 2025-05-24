@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetLeaderboardByUser (
+CREATE OR REPLACE PROCEDURE prc_GetLeaderboardByUser (
     p_user_id       IN weight_leaderboard.user_id%TYPE,
     p_records_cursor OUT SYS_REFCURSOR
 )
@@ -11,5 +11,5 @@ BEGIN
         JOIN exercises e ON wl.exercise_id = e.exercise_id
         WHERE wl.user_id = p_user_id
         ORDER BY e.name, wl.measurement_date DESC;
-END GetLeaderboardByUser;
+END prc_GetLeaderboardByUser;
 /

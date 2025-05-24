@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UpdateTrainingPlan (
+CREATE OR REPLACE PROCEDURE prc_UpdateTrainingPlan (
     p_plan_id     IN training_plans.plan_id%TYPE,
     p_name        IN training_plans.name%TYPE
 )
@@ -12,5 +12,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UpdateTrainingPlan;
+END prc_UpdateTrainingPlan;
 /

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UpdateTrainerSession (
+CREATE OR REPLACE PROCEDURE prc_UpdateTrainerSession (
     p_schedule_id IN trainer_sessions.schedule_id%TYPE,
     p_trainer_id  IN trainer_sessions.trainer_id%TYPE,
     p_session_date IN trainer_sessions.session_date%TYPE,
@@ -18,5 +18,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UpdateTrainerSession;
+END prc_UpdateTrainerSession;
 /

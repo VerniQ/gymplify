@@ -10,7 +10,6 @@ CREATE OR REPLACE PROCEDURE prc_update_trainer(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy trener istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM TRAINERS
@@ -21,7 +20,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Aktualizuj dane trenera
     UPDATE TRAINERS
     SET name = p_name,
         surname = p_surname,

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE DeleteLeaderboardEntry (
+CREATE OR REPLACE PROCEDURE prc_DeleteLeaderboardEntry (
     p_result_id IN weight_leaderboard.result_id%TYPE
 )
 AS
@@ -10,5 +10,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END DeleteLeaderboardEntry;
+END prc_DeleteLeaderboardEntry;
 /

@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UnassignPlanFromUser (
+CREATE OR REPLACE PROCEDURE prc_UnassignPlanFromUser (
     p_user_id     IN personal_plans.user_id%TYPE,
     p_plan_id     IN personal_plans.plan_id%TYPE,
     p_trainer_id  IN personal_plans.trainer_id%TYPE DEFAULT NULL
@@ -14,5 +14,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UnassignPlanFromUser;
+END prc_UnassignPlanFromUser;
 /

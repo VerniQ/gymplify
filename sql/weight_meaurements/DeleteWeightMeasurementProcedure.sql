@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE DeleteWeightMeasurement (
+CREATE OR REPLACE PROCEDURE prc_DeleteWeightMeasurement (
     p_measurement_id IN weight_measurements.measurement_id%TYPE
 )
 AS
@@ -10,5 +10,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END DeleteWeightMeasurement;
+END prc_DeleteWeightMeasurement;
 /

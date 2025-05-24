@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetLeaderboardEntryById (
+CREATE OR REPLACE PROCEDURE prc_GetLeaderboardEntryById (
     p_result_id     IN weight_leaderboard.result_id%TYPE,
     p_record_cursor OUT SYS_REFCURSOR
 )
@@ -10,5 +10,5 @@ BEGIN
         JOIN users u ON wl.user_id = u.user_id
         JOIN exercises e ON wl.exercise_id = e.exercise_id
         WHERE wl.result_id = p_result_id;
-END GetLeaderboardEntryById;
+END prc_GetLeaderboardEntryById;
 /

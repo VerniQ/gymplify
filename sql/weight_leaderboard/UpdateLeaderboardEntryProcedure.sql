@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UpdateLeaderboardEntry (
+CREATE OR REPLACE PROCEDURE prc_UpdateLeaderboardEntry (
     p_result_id         IN weight_leaderboard.result_id%TYPE,
     p_exercise_id       IN weight_leaderboard.exercise_id%TYPE,
     p_measurement_date  IN weight_leaderboard.measurement_date%TYPE,
@@ -16,5 +16,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UpdateLeaderboardEntry;
+END prc_UpdateLeaderboardEntry;
 /

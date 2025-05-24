@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE ListAllTrainerSessions (
+CREATE OR REPLACE PROCEDURE prc_ListAllTrainerSessions (
     p_records_cursor OUT SYS_REFCURSOR
 )
 AS
@@ -15,5 +15,5 @@ BEGIN
         FROM trainer_sessions ts
         JOIN trainers t ON ts.trainer_id = t.trainer_id
         ORDER BY ts.session_date DESC, ts.start_time DESC;
-END ListAllTrainerSessions;
+END prc_ListAllTrainerSessions;
 /

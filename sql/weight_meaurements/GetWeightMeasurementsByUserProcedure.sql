@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE GetWeightMeasurementsByUser (
+CREATE OR REPLACE PROCEDURE prc_GetWeightMeasurementsByUser (
     p_user_id        IN weight_measurements.user_id%TYPE,
     p_records_cursor OUT SYS_REFCURSOR
 )
@@ -10,5 +10,5 @@ BEGIN
         JOIN users u ON wm.user_id = u.user_id
         WHERE wm.user_id = p_user_id
         ORDER BY wm.measurement_date DESC;
-END GetWeightMeasurementsByUser;
+END prc_GetWeightMeasurementsByUser;
 /

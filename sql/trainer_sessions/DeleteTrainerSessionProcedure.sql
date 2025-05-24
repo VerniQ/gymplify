@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE DeleteTrainerSession (
+CREATE OR REPLACE PROCEDURE prc_DeleteTrainerSession (
     p_schedule_id IN trainer_sessions.schedule_id%TYPE
 )
 AS
@@ -10,5 +10,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END DeleteTrainerSession;
+END prc_DeleteTrainerSession;
 /

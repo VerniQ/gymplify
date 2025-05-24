@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE UnassignPersonalPlanById (
+CREATE OR REPLACE PROCEDURE prc_UnassignPersonalPlanById (
     p_personal_plan_id IN personal_plans.personal_plan_id%TYPE
 )
 AS
@@ -10,5 +10,5 @@ EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
         RAISE;
-END UnassignPersonalPlanById;
+END prc_UnassignPersonalPlanById;
 /

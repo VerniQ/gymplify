@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE ListAllLeaderboardEntries (
+CREATE OR REPLACE PROCEDURE prc_ListAllLeaderboardEntries (
     p_records_cursor OUT SYS_REFCURSOR
 )
 AS
@@ -9,5 +9,5 @@ BEGIN
         JOIN users u ON wl.user_id = u.user_id
         JOIN exercises e ON wl.exercise_id = e.exercise_id
         ORDER BY e.name, wl.weight DESC, wl.measurement_date DESC;
-END ListAllLeaderboardEntries;
+END prc_ListAllLeaderboardEntries;
 /

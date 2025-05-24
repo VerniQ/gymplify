@@ -6,7 +6,6 @@ CREATE OR REPLACE PROCEDURE prc_delete_exercise(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdzenie czy ćwiczenie istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM exercises
@@ -17,15 +16,12 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Usunięcie powiązań ćwiczenia z planami treningowymi
     DELETE FROM training_exercise
     WHERE exercise_id = p_exercise_id;
 
-    -- Usunięcie powiązanych rekordów z tabeli leaderboard
     DELETE FROM weight_leaderboard
     WHERE exercise_id = p_exercise_id;
 
-    -- Usunięcie ćwiczenia
     DELETE FROM exercises
     WHERE exercise_id = p_exercise_id;
 

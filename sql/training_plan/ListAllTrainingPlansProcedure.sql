@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE ListAllTrainingPlans (
+CREATE OR REPLACE PROCEDURE prc_ListAllTrainingPlans (
     p_records_cursor OUT SYS_REFCURSOR
 )
 AS
@@ -7,5 +7,5 @@ BEGIN
         SELECT plan_id, name
         FROM training_plans
         ORDER BY name;
-END ListAllTrainingPlans;
+END prc_ListAllTrainingPlans;
 /

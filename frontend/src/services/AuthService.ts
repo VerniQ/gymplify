@@ -5,7 +5,7 @@ import { API_BASE_URL } from '../config/generalConfig.ts';
 export const AuthService = {
     register: async (payload: RegistrationPayload): Promise<AuthResponse> => {
         try {
-            const response = await fetch(`${API_BASE_URL}/signup`, {
+            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ export const AuthService = {
 
     login: async (payload: LoginPayload): Promise<AuthResponse> => {
         try {
-            const response = await fetch(`${API_BASE_URL}/login`, {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

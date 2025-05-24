@@ -3,11 +3,11 @@ package me.verni.gymplify.service;
 import me.verni.gymplify.dto.User; // Twoje DTO użytkownika
 import me.verni.gymplify.exception.UserLoginException;
 import me.verni.gymplify.exception.UserRegistrationException;
+import me.verni.gymplify.repository.UserRepository;
 import me.verni.gymplify.util.EmailValidator;
 import me.verni.gymplify.util.PasswordHasher;
 import me.verni.gymplify.util.PasswordValidator;
 import me.verni.gymplify.util.RoleType;
-import org.springframework.security.crypto.password.PasswordEncoder; // Można użyć PasswordEncoder z Spring Security zamiast jBCrypt bezpośrednio
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional; // Dla zarządzania transakcjami
 

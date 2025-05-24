@@ -1,0 +1,19 @@
+package me.verni.gymplify.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class MuscleGroupRequestDto {
+    @NotBlank(message = "Nazwa grupy mięśniowej jest wymagana.")
+    @Size(max = 255, message = "Nazwa grupy mięśniowej nie może przekraczać 255 znaków.")
+    private String groupName;
+
+    @Size(max = 4000, message = "Opis nie może przekraczać 4000 znaków.")
+    private String description;
+}

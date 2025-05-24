@@ -1,6 +1,7 @@
 package me.verni.gymplify.service;
 
 import me.verni.gymplify.dto.User; // Twoje DTO użytkownika
+import me.verni.gymplify.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

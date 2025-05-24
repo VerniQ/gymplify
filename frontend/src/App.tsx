@@ -11,9 +11,11 @@ import TrainingsPage from './pages/TrainingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
+import MuscleGroupsPage from "./pages/admin/muscle-group/MuscleGroupsPage.tsx";
 
 function App() {
-    const { isAuthenticated, isLoading } = useAuth(); /
+    const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
         return <div className="flex justify-center items-center min-h-screen bg-gray-100"><p className="text-lg text-gray-600">Ładowanie aplikacji...</p></div>;
@@ -34,6 +36,8 @@ function App() {
                 <Route path="/settings" element={<SettingsPage />} />
 
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/admin" element={<AdminDashboardPage/>}/>
+                <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
             </Route>
 
 

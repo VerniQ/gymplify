@@ -7,7 +7,6 @@ CREATE OR REPLACE PROCEDURE prc_get_trainer_details(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy trener istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM TRAINERS
@@ -18,7 +17,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Pobierz dane trenera
     OPEN p_trainer_data FOR
         SELECT t.trainer_id, t.user_id, t.name, t.surname, t.specialization, t.contact,
                u.username, u.email

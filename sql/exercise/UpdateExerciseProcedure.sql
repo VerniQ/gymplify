@@ -3,7 +3,7 @@ CREATE OR REPLACE PROCEDURE prc_update_exercise(
     p_name IN VARCHAR2,
     p_description IN CLOB,
     p_muscle_group IN VARCHAR2,
-    p_group_id IN NUMBER DEFAULT NULL,  -- Dodany parametr grupy mięśniowej
+    p_group_id IN NUMBER DEFAULT NULL,
     p_success OUT BOOLEAN
 ) AS
     v_count NUMBER;
@@ -11,7 +11,6 @@ CREATE OR REPLACE PROCEDURE prc_update_exercise(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy ćwiczenie istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM EXERCISES
@@ -22,7 +21,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Sprawdzenie czy grupa mięśniowa istnieje
     IF p_group_id IS NOT NULL THEN
         SELECT COUNT(*)
         INTO v_group_exists
@@ -35,7 +33,6 @@ BEGIN
         END IF;
     END IF;
 
-    -- Aktualizuj ćwiczenie
     UPDATE EXERCISES
     SET name = p_name,
         description = p_description,

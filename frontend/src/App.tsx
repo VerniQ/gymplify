@@ -13,7 +13,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
 
 function App() {
-    const { isAuthenticated, isLoading } = useAuth(); /
+    const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
         return <div className="flex justify-center items-center min-h-screen bg-gray-100"><p className="text-lg text-gray-600">Ładowanie aplikacji...</p></div>;

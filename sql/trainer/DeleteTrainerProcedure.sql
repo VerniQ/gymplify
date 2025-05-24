@@ -6,7 +6,6 @@ CREATE OR REPLACE PROCEDURE prc_delete_trainer(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy trener istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM TRAINERS
@@ -19,15 +18,12 @@ BEGIN
 
     SAVEPOINT before_delete;
 
-    -- Usuń sesje trenera
     DELETE FROM TRAINER_SESSIONS
     WHERE trainer_id = p_trainer_id;
 
-    -- Usuń plany osobiste utworzone przez trenera
     DELETE FROM PERSONAL_PLANS
     WHERE trainer_id = p_trainer_id;
 
-    -- Usuń trenera
     DELETE FROM TRAINERS
     WHERE trainer_id = p_trainer_id;
 

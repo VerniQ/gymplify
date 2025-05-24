@@ -7,7 +7,6 @@ CREATE OR REPLACE PROCEDURE prc_delete_muscle_group(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy grupa mięśniowa istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM MUSCLE_GROUPS
@@ -18,7 +17,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Sprawdź czy istnieją powiązane ćwiczenia
     SELECT COUNT(*)
     INTO v_exercises_count
     FROM EXERCISES
@@ -29,7 +27,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Usuń grupę mięśniową
     DELETE FROM MUSCLE_GROUPS
     WHERE group_id = p_group_id;
 

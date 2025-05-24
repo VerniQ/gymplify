@@ -7,7 +7,6 @@ CREATE OR REPLACE PROCEDURE prc_get_muscle_group_by_id(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy grupa mięśniowa istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM MUSCLE_GROUPS

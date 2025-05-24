@@ -5,7 +5,7 @@ CREATE OR REPLACE PROCEDURE prc_create_exercise(
     p_name IN VARCHAR2,
     p_description IN CLOB,
     p_muscle_group IN VARCHAR2,
-    p_group_id IN NUMBER DEFAULT NULL,  -- Dodany nowy parametr z wartością domyślną
+    p_group_id IN NUMBER DEFAULT NULL,
     p_exercise_id OUT NUMBER,
     p_success OUT BOOLEAN
 ) AS

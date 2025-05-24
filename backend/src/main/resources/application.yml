@@ -11,10 +11,14 @@ spring:
       idle-timeout: 30000
       connection-timeout: 20000
 
+server:
+  port: 8080
+
+
   jpa:
     hibernate:
       ddl-auto: none
-    database-platform: ""  # leave empty if it was blank
+    database-platform:
     show-sql: false
     properties:
       hibernate:
@@ -23,10 +27,10 @@ spring:
 
 logging:
   level:
-    org:
-      springframework:
-        jdbc:
-          core: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.jdbc.core: INFO
+    me.verni.gymplify: DEBUG
 jwt:
   secret: sCZNSm9T6zwiFWiHsfnbJAIsjLjv6f9dK9IHSGLTl4o7BIUYWv3iMca5DvSqkcXU
   expiration: 86400000

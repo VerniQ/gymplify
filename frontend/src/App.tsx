@@ -11,6 +11,8 @@ import TrainingsPage from './pages/TrainingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
+import MuscleGroupsPage from "./pages/admin/muscle-group/MuscleGroupsPage.tsx";
 
 function App() {
     const { isAuthenticated, isLoading } = useAuth();
@@ -34,6 +36,8 @@ function App() {
                 <Route path="/settings" element={<SettingsPage />} />
 
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/admin" element={<AdminDashboardPage/>}/>
+                <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
             </Route>
 
 

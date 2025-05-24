@@ -1,4 +1,4 @@
-package me.verni.gymplify.service; // lub .repository
+package me.verni.gymplify.repository; // lub .repository
 
 import lombok.RequiredArgsConstructor;
 import me.verni.gymplify.dto.User; // Twoje DTO użytkownika

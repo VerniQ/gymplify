@@ -1,10 +1,17 @@
-import './index.css';
+// src/main.tsx lub src/index.tsx
+import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter} from "react-router-dom";
-import App from './App';
+import App from './App.tsx';
+import './index.css'; // Twoje globalne style
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext.tsx';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-    <BrowserRouter>
-        <App />
-    </BrowserRouter>
+    <React.StrictMode>
+        <BrowserRouter>
+            <AuthProvider>
+                <App />
+            </AuthProvider>
+        </BrowserRouter>
+    </React.StrictMode>,
 );

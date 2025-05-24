@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE prc_initialize_database AS
+create OR REPLACE PROCEDURE prc_initialize_database AS
 
     v_success BOOLEAN;
 
@@ -54,11 +54,22 @@ BEGIN
                  );
 
     v_success := fn_add_table(
+            'CREATE TABLE MUSCLE_GROUPS (
+                group_id NUMBER PRIMARY KEY,
+                group_name VARCHAR2(100) NOT NULL UNIQUE,
+                description CLOB
+            )',
+            'MUSCLE_GROUPS'
+                 );
+
+    v_success := fn_add_table(
             'CREATE TABLE EXERCISES (
                 exercise_id NUMBER PRIMARY KEY,
                 name VARCHAR2(255),
                 description CLOB,
-                muscle_group VARCHAR2(100)
+                muscle_group VARCHAR2(100),
+                group_id NUMBER,
+                CONSTRAINT fk_exercise_muscle_group FOREIGN KEY (group_id) REFERENCES MUSCLE_GROUPS(group_id)
             )',
             'EXERCISES'
                  );

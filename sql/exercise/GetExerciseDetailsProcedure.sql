@@ -7,7 +7,6 @@ CREATE OR REPLACE PROCEDURE prc_get_exercise_details(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdzenie czy ćwiczenie istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM exercises
@@ -18,7 +17,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Pobranie szczegółów ćwiczenia
     OPEN p_exercise_data FOR
         SELECT exercise_id, name, description, muscle_group
         FROM exercises

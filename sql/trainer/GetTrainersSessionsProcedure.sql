@@ -9,7 +9,6 @@ CREATE OR REPLACE PROCEDURE prc_get_trainer_sessions(
 BEGIN
     p_success := FALSE;
 
-    -- Sprawdź czy trener istnieje
     SELECT COUNT(*)
     INTO v_count
     FROM trainers
@@ -20,7 +19,6 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Pobierz sesje trenera w danym okresie
     OPEN p_sessions FOR
         SELECT schedule_id, trainer_id, session_date,
                start_time, end_time

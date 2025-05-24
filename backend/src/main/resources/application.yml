@@ -32,5 +32,5 @@ logging:
     org.springframework.jdbc.core: INFO
     me.verni.gymplify: DEBUG
 jwt:
-  secret: sCZNSm9T6zwiFWiHsfnbJAIsjLjv6f9dK9IHSGLTl4o7BIUYWv3iMca5DvSqkcXU #random generated secret
+  secret: sCZNSm9T6zwiFWiHsfnbJAIsjLjv6f9dK9IHSGLTl4o7BIUYWv3iMca5DvSqkcXU
   expiration: 86400000

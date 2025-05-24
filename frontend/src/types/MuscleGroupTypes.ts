@@ -1,4 +1,3 @@
-
 export interface MuscleGroup {
     id: string;
     name: string;
@@ -6,12 +5,12 @@ export interface MuscleGroup {
 }
 
 export interface MuscleGroupPayload {
-    group_name: string;
+    groupName: string;
     description: string | null;
 }
 
 export interface MuscleGroupApiResponse {
-    group_id: number;
-    group_name: string;
+    groupId: number;
+    groupName: string;
     description: string | null;
 }

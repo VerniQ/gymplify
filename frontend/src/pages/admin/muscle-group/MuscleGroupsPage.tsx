@@ -1,9 +1,8 @@
 // src/pages/admin/muscle-group/MuscleGroupsPage.tsx
 import React, { useState, useEffect, useMemo } from 'react';
-// Upewnij się, że ścieżki do tych komponentów/serwisów/typów są poprawne w Twoim projekcie
-import AdminSidebarComponent from '../../../components/admin/AdminSidebarComponent'; // Dostosuj ścieżkę!
-import { MuscleGroupService } from '../../../services/MuscleGroupService';    // Dostosuj ścieżkę!
-import { MuscleGroup, MuscleGroupPayload } from '../../../types/MuscleGroupTypes'; // Dostosuj ścieżkę!
+import AdminSidebarComponent from '../../../components/admin/AdminSidebarComponent';
+import { MuscleGroupService } from '../../../services/MuscleGroupService';
+import { MuscleGroup, MuscleGroupPayload } from '../../../types/MuscleGroupTypes';
 import {
     PlusCircle,
     Edit3,
@@ -25,7 +24,7 @@ const MuscleGroupsPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [modalMode, setModalMode] = useState<'add' | 'edit'>('add');
     const [currentMuscleGroup, setCurrentMuscleGroup] = useState<MuscleGroup | null>(null);
-    const [formData, setFormData] = useState<MuscleGroupPayload>({ group_name: '', description: null });
+    const [formData, setFormData] = useState<MuscleGroupPayload>({ groupName: '', description: null });
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
     const [deletingGroupId, setDeletingGroupId] = useState<string | null>(null);
@@ -33,7 +32,7 @@ const MuscleGroupsPage: React.FC = () => {
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 7;
 
-    const accentColor = 'blue'; // Możesz dostosować
+    const accentColor = 'blue';
 
     useEffect(() => {
         loadMuscleGroups();
@@ -44,7 +43,12 @@ const MuscleGroupsPage: React.FC = () => {
         setError(null);
         try {
             const data = await MuscleGroupService.getAllMuscleGroups();
-            setMuscleGroups(data);
+            // Filtruj grupy, które mogą mieć niepoprawne ID po stronie klienta, zanim ustawisz stan
+            const validData = data.filter(group => group.id && group.id !== "undefined" && group.id !== "null");
+            if (data.length !== validData.length) {
+                console.warn("Niektóre grupy mięśniowe zostały odfiltrowane z powodu nieprawidłowego ID.", { allData: data, validData });
+            }
+            setMuscleGroups(validData);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message || 'Wystąpił nieoczekiwany błąd podczas ładowania danych.');
@@ -59,58 +63,73 @@ const MuscleGroupsPage: React.FC = () => {
     };
 
     const handleOpenModal = (mode: 'add' | 'edit', group?: MuscleGroup) => {
+        setError(null);
         setModalMode(mode);
+
+        if (mode === 'edit' && (!group || !group.id || group.id === "undefined" || group.id === "null")) {
+            console.error("Próba edycji grupy z nieprawidłowym ID:", group);
+            setError("Nie można edytować grupy: brak lub nieprawidłowe ID.");
+            setIsModalOpen(false); // Nie otwieraj modala
+            return;
+        }
+
         setCurrentMuscleGroup(group || null);
         if (group) {
-            setFormData({ group_name: group.name, description: group.description || null });
+            setFormData({ groupName: group.name, description: group.description || null });
         } else {
-            setFormData({ group_name: '', description: null });
+            setFormData({ groupName: '', description: null });
         }
-        setError(null); // Czyść błędy formularza przed otwarciem modala
         setIsModalOpen(true);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setCurrentMuscleGroup(null);
-        setFormData({ group_name: '', description: null });
-        setError(null); // Czyść błędy formularza również przy zamykaniu
+        setFormData({ groupName: '', description: null });
+        setError(null);
     };
 
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData((prevFormData: MuscleGroupPayload) => ({
+        setFormData((prevFormData) => ({
             ...prevFormData,
-            [name]: value === '' && name === 'description' ? null : value, // Ustaw null jeśli opis jest pusty
+            [name]: name === 'description' && value === '' ? null : value,
         }));
     };
 
     const handleSaveMuscleGroup = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.group_name.trim()) {
-            setError("Nazwa grupy nie może być pusta."); // Błąd walidacji formularza
+        setError(null);
+
+        if (!formData.groupName.trim()) {
+            setError("Nazwa grupy nie może być pusta.");
             return;
         }
+
         setIsLoading(true);
-        setError(null); // Czyść poprzednie błędy API
 
         const payload: MuscleGroupPayload = {
-            group_name: formData.group_name.trim(),
+            groupName: formData.groupName.trim(),
             description: formData.description ? formData.description.trim() : null
         };
 
         try {
             if (modalMode === 'add') {
                 await MuscleGroupService.addMuscleGroup(payload);
-            } else if (currentMuscleGroup) {
+            } else if (currentMuscleGroup && currentMuscleGroup.id && currentMuscleGroup.id !== "undefined" && currentMuscleGroup.id !== "null") {
                 await MuscleGroupService.updateMuscleGroup(currentMuscleGroup.id, payload);
+            } else if (modalMode === 'edit') {
+                console.error("Błąd zapisu edycji: Nieprawidłowe lub brakujące ID w currentMuscleGroup", currentMuscleGroup);
+                setError("Nie można zapisać zmian: nieprawidłowe ID grupy.");
+                setIsLoading(false);
+                return;
             }
-            await loadMuscleGroups(); // Odśwież listę po sukcesie
+            await loadMuscleGroups();
             handleCloseModal();
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message || `Wystąpił nieoczekiwany błąd podczas ${modalMode === 'add' ? 'dodawania' : 'aktualizacji'} grupy.`);
-                console.error('Save Muscle Group Error:', err.message);
+                console.error('Save Muscle Group Error:', err.message, err);
             } else {
                 setError(`Wystąpił nieznany błąd podczas ${modalMode === 'add' ? 'dodawania' : 'aktualizacji'} grupy.`);
                 console.error('An unknown error occurred during save:', err);
@@ -120,27 +139,47 @@ const MuscleGroupsPage: React.FC = () => {
         }
     };
 
-    const handleDeleteClick = (id: string) => {
+    const handleDeleteClick = (id: string | null | undefined) => {
+        setError(null);
+        if (!id || id === "undefined" || id === "null") {
+            console.error("Próba usunięcia grupy z nieprawidłowym ID:", id);
+            setError("Nie można usunąć grupy: nieprawidłowe ID.");
+            return;
+        }
         setDeletingGroupId(id);
-        setError(null); // Czyść poprzednie błędy API
         setShowDeleteConfirm(true);
     };
 
     const confirmDelete = async () => {
-        if (!deletingGroupId) return;
+        if (!deletingGroupId || deletingGroupId === "undefined" || deletingGroupId === "null") {
+            console.error("Błąd potwierdzenia usunięcia: Nieprawidłowe lub brakujące ID grupy", deletingGroupId);
+            setError("Nie można usunąć grupy: nieprawidłowe ID.");
+            setIsLoading(false);
+            setShowDeleteConfirm(false);
+            setDeletingGroupId(null);
+            return;
+        }
         setIsLoading(true);
-        setError(null); // Czyść poprzednie błędy API
+        setError(null);
         try {
             await MuscleGroupService.deleteMuscleGroup(deletingGroupId);
-            await loadMuscleGroups(); // Odśwież listę po sukcesie
-            // Zresetuj paginację jeśli usunięto ostatni element na stronie
-            if (paginatedMuscleGroups.length === 1 && currentPage > 1) {
+            await loadMuscleGroups();
+            // Poprawiona logika paginacji
+            const newMuscleGroupsCount = muscleGroups.length - 1;
+            const newTotalPages = Math.max(1, Math.ceil(newMuscleGroupsCount / itemsPerPage));
+
+            if (currentPage > newTotalPages) {
+                setCurrentPage(newTotalPages);
+            } else if (paginatedMuscleGroups.length === 1 && currentPage > 1 && newMuscleGroupsCount > 0) {
                 setCurrentPage(currentPage - 1);
+            } else if (newMuscleGroupsCount === 0) {
+                setCurrentPage(1);
             }
+
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message || 'Wystąpił nieoczekiwany błąd podczas usuwania grupy.');
-                console.error('Delete Muscle Group Error:', err.message);
+                console.error('Delete Muscle Group Error:', err.message, err);
             } else {
                 setError('Wystąpił nieznany błąd podczas usuwania grupy.');
                 console.error('An unknown error occurred during delete:', err);
@@ -153,10 +192,12 @@ const MuscleGroupsPage: React.FC = () => {
     };
 
     const filteredMuscleGroups = useMemo(() => {
-        return muscleGroups.filter(group =>
-            group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (group.description && group.description.toLowerCase().includes(searchTerm.toLowerCase()))
-        );
+        return muscleGroups
+            .filter(group => group.id && group.id !== "undefined" && group.id !== "null")
+            .filter(group =>
+                group.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (group.description && group.description.toLowerCase().includes(searchTerm.toLowerCase()))
+            );
     }, [muscleGroups, searchTerm]);
 
     const paginatedMuscleGroups = useMemo(() => {
@@ -164,7 +205,7 @@ const MuscleGroupsPage: React.FC = () => {
         return filteredMuscleGroups.slice(startIndex, startIndex + itemsPerPage);
     }, [filteredMuscleGroups, currentPage, itemsPerPage]);
 
-    const totalPages = Math.ceil(filteredMuscleGroups.length / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(filteredMuscleGroups.length / itemsPerPage));
 
     return (
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
@@ -184,7 +225,7 @@ const MuscleGroupsPage: React.FC = () => {
                         <input
                             type="text"
                             placeholder="Szukaj grup..."
-                            className="w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500"
+                            className={`w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
                             value={searchTerm}
                             onChange={(e) => {setSearchTerm(e.target.value); setCurrentPage(1);}}
                         />
@@ -234,7 +275,7 @@ const MuscleGroupsPage: React.FC = () => {
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
                                 {paginatedMuscleGroups.map((group) => (
-                                    <tr key={group.id} className="hover:bg-gray-50/70 transition-colors group">
+                                    <tr key={group.id || `fallback-key-${Math.random()}`} className="hover:bg-gray-50/70 transition-colors group">
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{group.name}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell max-w-xs truncate" title={group.description || ''}>
                                             {group.description ? (group.description.length > 50 ? group.description.substring(0, 50) + '...' : group.description) : <span className="italic text-gray-400">Brak opisu</span>}
@@ -244,6 +285,7 @@ const MuscleGroupsPage: React.FC = () => {
                                                 onClick={() => handleOpenModal('edit', group)}
                                                 title="Edytuj"
                                                 className={`p-1.5 text-gray-400 hover:text-${accentColor}-600 rounded-md hover:bg-${accentColor}-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100`}
+                                                disabled={!group.id || group.id === "undefined" || group.id === "null"}
                                             >
                                                 <Edit3 size={18} />
                                             </button>
@@ -251,6 +293,7 @@ const MuscleGroupsPage: React.FC = () => {
                                                 onClick={() => handleDeleteClick(group.id)}
                                                 title="Usuń"
                                                 className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
+                                                disabled={!group.id || group.id === "undefined" || group.id === "null"}
                                             >
                                                 <Trash2 size={18} />
                                             </button>
@@ -261,7 +304,7 @@ const MuscleGroupsPage: React.FC = () => {
                             </table>
                         </div>
                     ) : null }
-                    {totalPages > 1 && !error && (
+                    {totalPages > 0 && !error && (
                         <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                             <button
                                 onClick={() => setCurrentPage((prevPage: number) => Math.max(1, prevPage - 1))}
@@ -294,21 +337,21 @@ const MuscleGroupsPage: React.FC = () => {
                                     </h3>
                                 </div>
                                 <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-                                    {error && ( // Błąd specyficzny dla modala
+                                    {error && (
                                         <div className={`p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md flex items-center`}>
                                             <AlertTriangle size={18} className="mr-2 flex-shrink-0" />
                                             <span>{error}</span>
                                         </div>
                                     )}
                                     <div>
-                                        <label htmlFor="group_name" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="groupName_input" className="block text-sm font-medium text-gray-700 mb-1">
                                             Nazwa grupy
                                         </label>
                                         <input
                                             type="text"
-                                            id="group_name"
-                                            name="group_name"
-                                            value={formData.group_name}
+                                            id="groupName_input"
+                                            name="groupName"
+                                            value={formData.groupName}
                                             onChange={handleFormChange}
                                             className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
                                             required
@@ -316,13 +359,13 @@ const MuscleGroupsPage: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label htmlFor="description_input" className="block text-sm font-medium text-gray-700 mb-1">
                                             Opis (opcjonalnie)
                                         </label>
                                         <textarea
-                                            id="description"
+                                            id="description_input"
                                             name="description"
-                                            value={formData.description || ''} // value nie może być null dla textarea
+                                            value={formData.description || ''}
                                             onChange={handleFormChange}
                                             rows={4}
                                             className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
@@ -340,7 +383,7 @@ const MuscleGroupsPage: React.FC = () => {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={isLoading}
+                                        disabled={isLoading || !formData.groupName.trim()}
                                         className={`px-4 py-2 text-sm font-medium text-white bg-${accentColor}-600 rounded-lg shadow-sm hover:bg-${accentColor}-700 focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center min-w-[80px]`}
                                     >
                                         {isLoading ? <Loader2 className={`w-5 h-5 animate-spin`} /> : (modalMode === 'add' ? 'Dodaj' : 'Zapisz')}
@@ -351,7 +394,7 @@ const MuscleGroupsPage: React.FC = () => {
                     </div>
                 )}
 
-                {showDeleteConfirm && (
+                {showDeleteConfirm && deletingGroupId && ( // Dodano deletingGroupId, aby modal się nie renderował bez ID
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-md">
                             <div className="px-6 py-5">
@@ -365,7 +408,7 @@ const MuscleGroupsPage: React.FC = () => {
                                         </h3>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500">
-                                                Czy na pewno chcesz usunąć grupę mięśniową <span className="font-semibold">{muscleGroups.find(mg => mg.id === deletingGroupId)?.name || ''}</span>? Tej operacji nie można cofnąć.
+                                                Czy na pewno chcesz usunąć grupę mięśniową <span className="font-semibold">{muscleGroups.find(mg => mg.id === deletingGroupId)?.name || 'o nieznanym ID'}</span>? Tej operacji nie można cofnąć.
                                             </p>
                                         </div>
                                     </div>

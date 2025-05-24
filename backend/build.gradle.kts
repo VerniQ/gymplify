@@ -33,7 +33,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
     //Oracle JDBC Driver
-    runtimeOnly("com.oracle.database.jdbc:ojdbc11:23.3.0.23.09")
+    implementation("com.oracle.database.jdbc:ojdbc11:23.3.0.23.09")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

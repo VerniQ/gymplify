@@ -1,9 +1,11 @@
 package me.verni.gymplify.repository;
 
-import me.verni.gymplify.exception.OperationFailedException;
 import me.verni.gymplify.dto.MuscleGroupDto;
+import me.verni.gymplify.exception.OperationFailedException;
 import oracle.jdbc.OracleTypes;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SqlOutParameter;
@@ -52,7 +54,7 @@ public class MuscleGroupRepository {
                 .declareParameters(
                         new SqlParameter("p_group_name", Types.VARCHAR),
                         new SqlParameter("p_description", Types.CLOB),
-                        new SqlOutParameter("p_new_group_id", Types.NUMERIC),
+                        new SqlOutParameter("p_new_group_id", Types.NUMERIC), // Kluczowe dla pobrania ID
                         new SqlOutParameter("p_success", Types.BOOLEAN)
                 );
 
@@ -75,59 +77,101 @@ public class MuscleGroupRepository {
 
     @SuppressWarnings("unchecked")
     public List<MuscleGroupDto> findAll() {
-        Map<String, Object> result = getAllMuscleGroupsCall.execute();
-        Boolean success = (Boolean) result.get("p_success");
-        if (Boolean.TRUE.equals(success)) {
-            return (List<MuscleGroupDto>) result.get("p_muscle_groups");
+        try {
+            Map<String, Object> result = getAllMuscleGroupsCall.execute();
+            Boolean success = (Boolean) result.get("p_success");
+            if (Boolean.TRUE.equals(success)) {
+                List<MuscleGroupDto> groups = (List<MuscleGroupDto>) result.get("p_muscle_groups");
+                return groups != null ? groups : List.of();
+            }
+            throw new OperationFailedException("Nie udało się pobrać listy grup mięśniowych (procedura zwróciła błąd).");
+        } catch (DataAccessException e) {
+            throw new OperationFailedException("Błąd dostępu do danych podczas pobierania grup mięśniowych: " + e.getMessage(), e);
         }
-        throw new OperationFailedException("Nie udało się pobrać listy grup mięśniowych.");
     }
 
     @SuppressWarnings("unchecked")
     public Optional<MuscleGroupDto> findById(Long id) {
-        Map<String, Object> result = getMuscleGroupByIdCall.execute(Map.of("p_group_id", id));
-        Boolean success = (Boolean) result.get("p_success");
-        if (Boolean.TRUE.equals(success)) {
-            List<MuscleGroupDto> list = (List<MuscleGroupDto>) result.get("p_muscle_group");
-            return list != null && !list.isEmpty() ? Optional.of(list.get(0)) : Optional.empty();
+        try {
+            Map<String, Object> result = getMuscleGroupByIdCall.execute(Map.of("p_group_id", id));
+            Boolean success = (Boolean) result.get("p_success");
+            if (Boolean.TRUE.equals(success)) {
+                List<MuscleGroupDto> list = (List<MuscleGroupDto>) result.get("p_muscle_group");
+                return list != null && !list.isEmpty() ? Optional.of(list.get(0)) : Optional.empty();
+            }
+            return Optional.empty();
+        } catch (DataAccessException e) {
+            throw new OperationFailedException("Błąd dostępu do danych podczas pobierania grupy mięśniowej o ID " + id + ": " + e.getMessage(), e);
         }
-        return Optional.empty();
     }
 
     public Long save(String groupName, String description) {
-        Map<String, Object> result = addMuscleGroupCall.execute(
-                Map.of("p_group_name", groupName, "p_description", description == null ? "" : description)
-        );
-        Boolean success = (Boolean) result.get("p_success");
-        if (Boolean.TRUE.equals(success)) {
-            Number newGroupId = (Number) result.get("p_new_group_id");
-            if (newGroupId != null) {
-                return newGroupId.longValue();
+        try {
+            Map<String, Object> params = new java.util.HashMap<>();
+            params.put("p_group_name", groupName);
+            params.put("p_description", description);
+
+            Map<String, Object> result = addMuscleGroupCall.execute(params);
+            Boolean success = (Boolean) result.get("p_success");
+
+            if (Boolean.TRUE.equals(success)) {
+                Object newGroupIdObj = result.get("p_new_group_id");
+                if (newGroupIdObj instanceof Number) {
+                    return ((Number) newGroupIdObj).longValue();
+                } else {
+                    throw new OperationFailedException("Procedura dodawania grupy zakończyła się sukcesem, ale nie zwróciła poprawnego ID grupy.");
+                }
+            } else {
+                throw new OperationFailedException("Nie udało się dodać grupy mięśniowej. Procedura PL/SQL zgłosiła błąd (możliwy duplikat nazwy: '" + groupName + "').");
             }
-            throw new OperationFailedException("Procedura dodawania grupy nie zwróciła ID.");
+        } catch (DuplicateKeyException e) {
+            throw e;
+        } catch (DataAccessException e) {
+            throw new OperationFailedException("Błąd dostępu do danych podczas dodawania grupy mięśniowej: " + e.getMessage(), e);
         }
-        throw new OperationFailedException("Nie udało się dodać grupy mięśniowej.");
     }
 
     public boolean update(Long id, String groupName, String description) {
-        Map<String, Object> result = updateMuscleGroupCall.execute(
-                Map.of("p_group_id", id, "p_group_name", groupName, "p_description", description == null ? "" : description)
-        );
-        return Boolean.TRUE.equals(result.get("p_success"));
+        try {
+            Map<String, Object> params = new java.util.HashMap<>();
+            params.put("p_group_id", id);
+            params.put("p_group_name", groupName);
+            params.put("p_description", description);
+
+            Map<String, Object> result = updateMuscleGroupCall.execute(params);
+            Boolean success = (Boolean) result.get("p_success");
+            if (success == null) {
+                throw new OperationFailedException("Procedura aktualizacji grupy nie zwróciła statusu powodzenia.");
+            }
+            return success;
+        } catch (DuplicateKeyException e) {
+            throw e;
+        } catch (DataAccessException e) {
+            throw new OperationFailedException("Błąd dostępu do danych podczas aktualizacji grupy mięśniowej o ID " + id + ": " + e.getMessage(), e);
+        }
     }
 
     public boolean deleteById(Long id) {
-        Map<String, Object> result = deleteMuscleGroupCall.execute(Map.of("p_group_id", id));
-        return Boolean.TRUE.equals(result.get("p_success"));
+        try {
+            Map<String, Object> result = deleteMuscleGroupCall.execute(Map.of("p_group_id", id));
+            Boolean success = (Boolean) result.get("p_success");
+            if (success == null) {
+                throw new OperationFailedException("Procedura usuwania grupy nie zwróciła statusu powodzenia.");
+            }
+            return success;
+        } catch (DataAccessException e) {
+
+            throw new OperationFailedException("Błąd dostępu do danych podczas usuwania grupy mięśniowej o ID " + id + ": " + e.getMessage(), e);
+        }
     }
 
     private static class MuscleGroupRowMapper implements RowMapper<MuscleGroupDto> {
         @Override
         public MuscleGroupDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new MuscleGroupDto(
-                    rs.getLong("group_id"),
-                    rs.getString("group_name"),
-                    rs.getString("description")
+                    rs.getLong("GROUP_ID"),
+                    rs.getString("GROUP_NAME"),
+                    rs.getString("DESCRIPTION")
             );
         }
     }

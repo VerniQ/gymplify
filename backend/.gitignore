@@ -43,4 +43,4 @@ bin/
 .idea
 /.idea
 
-/resources/application.yml
+.resources/

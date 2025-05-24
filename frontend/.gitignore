@@ -68,3 +68,4 @@ bin/
 /.idea
 
 src/config/generalConfig.ts
+generalConfig.ts

@@ -36,7 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         return new org.springframework.security.core.userdetails.User(
                 appUser.getEmail(),
-                appUser.getPasswordHash(), // Hash hasła z bazy
+                appUser.getPasswordHash(),
                 Collections.singletonList(authority)
         );
     }

@@ -1,6 +1,6 @@
-create OR REPLACE PROCEDURE prc_initialize_database AS
-
+CREATE OR REPLACE PROCEDURE prc_initialize_database AS
     v_success BOOLEAN;
+    v_debug_msg VARCHAR2(4000);
 
     FUNCTION fn_add_table(
         p_sql IN VARCHAR2,
@@ -8,26 +8,45 @@ create OR REPLACE PROCEDURE prc_initialize_database AS
     ) RETURN BOOLEAN IS
         temp NUMBER;
     BEGIN
-        SELECT COUNT(*)
-        INTO temp
-        FROM USER_TABLES
-        WHERE TABLE_NAME = UPPER(p_table_name);
+        DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Rozpoczęto dla tabeli: ' || p_table_name);
+        BEGIN
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Sprawdzanie istnienia tabeli ' || UPPER(p_table_name) || ' w USER_TABLES...');
+            SELECT COUNT(*)
+            INTO temp
+            FROM USER_TABLES
+            WHERE TABLE_NAME = UPPER(p_table_name);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Liczba dla ' || UPPER(p_table_name) || ' w USER_TABLES to: ' || temp);
+        EXCEPTION
+            WHEN OTHERS THEN
+                DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas zapytania do USER_TABLES dla ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                RETURN FALSE;
+        END;
 
         IF temp = 0 THEN
-            EXECUTE IMMEDIATE p_sql;
-            DBMS_OUTPUT.PUT_LINE('Table ' || p_table_name || ' successfully created.');
-            RETURN TRUE;
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Próba utworzenia tabeli ' || p_table_name);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Fragment SQL: ' || SUBSTR(p_sql, 1, 1000));
+            BEGIN
+                EXECUTE IMMEDIATE p_sql;
+                DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Tabela ' || p_table_name || ' utworzona pomyślnie.');
+                RETURN TRUE;
+            EXCEPTION
+                WHEN OTHERS THEN
+                    DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas EXECUTE IMMEDIATE dla tabeli ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                    RETURN FALSE;
+            END;
         ELSE
-            DBMS_OUTPUT.PUT_LINE('Table ' || p_table_name || ' already exists.');
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Tabela ' || p_table_name || ' już istnieje.');
             RETURN FALSE;
         END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('Error creating table ' || p_table_name || ': ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Nieoczekiwany błąd w fn_add_table dla ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
             RETURN FALSE;
     END fn_add_table;
 
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Rozpoczęto inicjalizację bazy danych...');
+
     v_success := fn_add_table(
             'CREATE TABLE USERS (
                 user_id NUMBER PRIMARY KEY,
@@ -39,6 +58,7 @@ BEGIN
             )',
             'USERS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia USERS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINERS (
@@ -52,6 +72,7 @@ BEGIN
             )',
             'TRAINERS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia TRAINERS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE MUSCLE_GROUPS (
@@ -73,6 +94,7 @@ BEGIN
             )',
             'EXERCISES'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia EXERCISES: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINING_PLANS (
@@ -81,6 +103,7 @@ BEGIN
             )',
             'TRAINING_PLANS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia TRAINING_PLANS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE PERSONAL_PLANS (
@@ -94,6 +117,7 @@ BEGIN
             )',
             'PERSONAL_PLANS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia PERSONAL_PLANS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINING_EXERCISE (
@@ -105,6 +129,7 @@ BEGIN
             )',
             'TRAINING_EXERCISE'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia TRAINING_EXERCISE: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINER_SESSIONS (
@@ -117,6 +142,7 @@ BEGIN
             )',
             'TRAINER_SESSIONS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia TRAINER_SESSIONS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE WEIGHT_MEASUREMENTS (
@@ -128,6 +154,7 @@ BEGIN
             )',
             'WEIGHT_MEASUREMENTS'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia WEIGHT_MEASUREMENTS: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
     v_success := fn_add_table(
             'CREATE TABLE WEIGHT_LEADERBOARD (
@@ -141,10 +168,11 @@ BEGIN
             )',
             'WEIGHT_LEADERBOARD'
                  );
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik próby utworzenia WEIGHT_LEADERBOARD: ' || CASE WHEN v_success THEN 'Sukces' ELSE 'Porażka/Istnieje' END);
 
-    DBMS_OUTPUT.PUT_LINE('Database initialization completed.');
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Inicjalizacja bazy danych zakończona (lub podjęto próbę).');
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('Error in database initialization: ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Nieoczekiwany błąd w głównym bloku PRC_INITIALIZE_DATABASE: ' || SQLCODE || ' - ' || SQLERRM);
 END prc_initialize_database;
 /

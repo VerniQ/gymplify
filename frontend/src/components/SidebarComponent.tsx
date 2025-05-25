@@ -1,19 +1,18 @@
+// src/components/SidebarComponent.tsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
-    LogOut,
     LayoutDashboard,
     Dumbbell,
-    Bell,
-    Heart,
     Settings,
-    Search,
+    LogOut,
+    UserCircle,
+    ShieldCheck,
     ChevronLeft,
-    UserCircle, DumbbellIcon,
 } from 'lucide-react';
 
-interface MenuItem {
+interface UserMenuItem {
     id: string;
     label: string;
     icon: React.ElementType;
@@ -22,20 +21,18 @@ interface MenuItem {
 
 const SidebarComponent: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [activeItem, setActiveItem] = useState<string>(location.pathname);
     const { user, logout } = useAuth();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         setActiveItem(location.pathname);
     }, [location.pathname]);
 
-    const menuItems: MenuItem[] = [
-        { id: '/dashboard', label: 'Pulpit', icon: LayoutDashboard, path: '/dashboard' },
+    const userMenuItems: UserMenuItem[] = [
+        { id: '/dashboard', label: 'Mój Pulpit', icon: LayoutDashboard, path: '/dashboard' },
         { id: '/trainings', label: 'Treningi', icon: Dumbbell, path: '/trainings' },
-        { id: '/notifications', label: 'Powiadomienia', icon: Bell, path: '/notifications' },
-        { id: '/favorites', label: 'Ulubione', icon: Heart, path: '/favorites' },
         { id: '/settings', label: 'Ustawienia', icon: Settings, path: '/settings' },
     ];
 
@@ -51,9 +48,9 @@ const SidebarComponent: React.FC = () => {
         logout();
     };
 
-    const filteredMenuItems = menuItems.filter(item =>
-        isSidebarCollapsed || item.label.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const switchToAdminPanel = () => {
+        navigate('/admin');
+    };
 
     return (
         <div className={`
@@ -61,14 +58,14 @@ const SidebarComponent: React.FC = () => {
             h-screen bg-white
             flex flex-col
             border-r border-gray-200/70
-            transition-all duration-300 ease-in-out shadow-lg
+            transition-all duration-300 ease-in-out shadow-md
             relative
         `}>
             <button
                 onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                 className={`
                     absolute top-5 -right-3.5 z-10
-                    w-7 h-7 bg-white text-${accentColor}-600
+                    w-7 h-7 bg-white text-${accentColor}-600 
                     border border-gray-200/80
                     rounded-full flex items-center justify-center
                     shadow-md hover:bg-gray-50 hover:border-gray-300
@@ -87,42 +84,20 @@ const SidebarComponent: React.FC = () => {
                 flex-shrink-0
             `}>
                 <div className={`bg-${accentColor}-600 p-1.5 rounded-lg flex-shrink-0 shadow-sm`}>
-                    <DumbbellIcon className={`w-6 h-6 text-white ${isSidebarCollapsed ? 'hidden' : ''}`} />
+                    <Dumbbell className="w-6 h-6 text-white" />
                 </div>
                 {!isSidebarCollapsed && (
                     <div className="overflow-hidden">
                         <h1 className="text-lg font-semibold text-slate-800 whitespace-nowrap">
                             Gymplify
                         </h1>
-                        <p className="text-xs text-gray-500 whitespace-nowrap -mt-0.5">Fitness App</p>
+                        <p className="text-xs text-gray-500 whitespace-nowrap -mt-0.5">Twój Asystent</p>
                     </div>
                 )}
             </div>
 
-            {!isSidebarCollapsed && (
-                <div className="p-4 flex-shrink-0">
-                    <div className="relative">
-                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400 pointer-events-none" strokeWidth={2}/>
-                        <input
-                            type="text"
-                            placeholder="Szukaj..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={`
-                                w-full pl-10 pr-3 py-2 text-sm
-                                bg-gray-100/80 hover:bg-gray-100 focus:bg-white
-                                border border-transparent focus:border-gray-300
-                                rounded-lg text-gray-700 placeholder-gray-500
-                                focus:outline-none focus:ring-1 focus:ring-${accentColor}-500
-                                transition-all duration-200
-                            `}
-                        />
-                    </div>
-                </div>
-            )}
-
             <nav className="flex-1 overflow-y-auto px-3 pt-1 pb-3 space-y-1">
-                {filteredMenuItems.map((item) => (
+                {userMenuItems.map((item) => (
                     <Link
                         key={item.id}
                         to={item.path}
@@ -133,7 +108,7 @@ const SidebarComponent: React.FC = () => {
                             focus:outline-none focus:ring-2 focus:ring-${accentColor}-400 focus:ring-offset-1
                             ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
                             ${ activeItem === item.path
-                            ? `bg-${accentColor}-600 text-white font-semibold shadow-md hover:bg-${accentColor}-700`
+                            ? `bg-${accentColor}-600 text-white font-semibold shadow-md hover:bg-${accentColor}-700` 
                             : `text-gray-500 hover:bg-gray-100 hover:text-gray-800`
                         }`}
                     >
@@ -141,8 +116,8 @@ const SidebarComponent: React.FC = () => {
                             className={`
                                 flex-shrink-0 w-5 h-5
                                 ${activeItem === item.path
-                                ? 'text-white'
-                                : 'text-gray-400 group-hover:text-gray-500'
+                                ? 'text-white' 
+                                : `text-gray-400 group-hover:text-gray-500`
                             }`}
                             strokeWidth={activeItem === item.path ? 2.2 : 2}
                         />
@@ -151,13 +126,13 @@ const SidebarComponent: React.FC = () => {
                 ))}
             </nav>
 
-            <div className="p-3 border-t border-gray-200/70 flex-shrink-0">
+            <div className="p-3 border-t border-gray-200/70 flex-shrink-0 space-y-1.5">
                 {!isSidebarCollapsed && user && (
-                    <div className="flex items-center mb-2.5 p-1.5 rounded-md">
+                    <div className="flex items-center p-1.5 rounded-md mb-1">
                         <div className={`
-                            w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold
-                            bg-white text-${accentColor}-700 border border-gray-300 shadow-sm
-                        `}>
+                            w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0
+                            bg-white text-${accentColor}-700 border-2 border-${accentColor}-500 shadow-sm 
+                        `}> {/* Użycie accentColor */}
                             {user.username ? user.username.substring(0, 1).toUpperCase() : <UserCircle size={20}/>}
                         </div>
                         <div className="ml-2.5 overflow-hidden">
@@ -170,18 +145,36 @@ const SidebarComponent: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                {user?.role === 'ADMIN' && (
+                    <button
+                        onClick={switchToAdminPanel}
+                        title="Przełącz na Panel Admina"
+                        className={`
+                            w-full flex items-center px-3 py-2.5 rounded-lg
+                            text-blue-700 bg-blue-100 hover:bg-blue-200 hover:text-blue-800 
+                            transition-colors duration-150 ease-in-out group
+                            focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1
+                            ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
+                        `}
+                    >
+                        <ShieldCheck className="flex-shrink-0 w-5 h-5 text-blue-500 group-hover:text-blue-700" strokeWidth={2} /> {/* Jawnie ustawione kolory niebieskie */}
+                        {!isSidebarCollapsed && <span className="text-sm">Panel Admina</span>}
+                    </button>
+                )}
+
                 <button
                     onClick={handleLogout}
                     title="Wyloguj się"
                     className={`
                         w-full flex items-center px-3 py-2.5 rounded-lg
-                        text-gray-500 hover:bg-gray-100 hover:text-gray-800
+                        text-gray-600 hover:bg-red-100 hover:text-red-700
                         transition-colors duration-150 ease-in-out group
-                        focus:outline-none focus:ring-2 focus:ring-${accentColor}-400 focus:ring-offset-1
+                        focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
                         ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
                     `}
                 >
-                    <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-gray-500" strokeWidth={2} />
+                    <LogOut className="flex-shrink-0 w-5 h-5 text-gray-500 group-hover:text-red-600" strokeWidth={2} />
                     {!isSidebarCollapsed && <span className="text-sm">Wyloguj się</span>}
                 </button>
             </div>

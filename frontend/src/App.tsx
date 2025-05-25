@@ -12,6 +12,7 @@ import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
 import MuscleGroupsPage from "./pages/admin/muscle-group/MuscleGroupsPage.tsx";
+import ExercisesPage from "./pages/admin/exercise/ExercisesPage.tsx";
 import UserManagementPage from "./pages/admin/user-management/UserManagementPage.tsx";
 import TrainerManagementPage from "./pages/admin/trainer-management/TrainerManagementPage.tsx";
 
@@ -34,6 +35,10 @@ function App() {
                 <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/admin" element={<AdminDashboardPage/>}/>
+                <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
+                <Route path="/admin/exercises/" element={<ExercisesPage/>}/>
+            </Route>
 
                 {user?.role === 'ADMIN' && (
                     <>

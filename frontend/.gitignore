@@ -67,5 +67,4 @@ bin/
 .idea
 /.idea
 
-src/config/generalConfig.ts
-generalConfig.ts
+/src/config/

@@ -34,6 +34,7 @@ const SidebarComponent: React.FC = () => {
         { id: '/dashboard', label: 'Mój Pulpit', icon: LayoutDashboard, path: '/dashboard' },
         { id: '/trainings', label: 'Treningi', icon: Dumbbell, path: '/trainings' },
         { id: '/settings', label: 'Ustawienia', icon: Settings, path: '/settings' },
+
     ];
 
     const roleMap: { [key: string]: string } = {

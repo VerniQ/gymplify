@@ -88,7 +88,6 @@ BEGIN
                 exercise_id NUMBER PRIMARY KEY,
                 name VARCHAR2(255),
                 description CLOB,
-                muscle_group VARCHAR2(100),
                 group_id NUMBER,
                 CONSTRAINT fk_exercise_muscle_group FOREIGN KEY (group_id) REFERENCES MUSCLE_GROUPS(group_id)
             )',

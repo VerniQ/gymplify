@@ -37,6 +37,7 @@ const SidebarComponent: React.FC = () => {
         { id: '/notifications', label: 'Powiadomienia', icon: Bell, path: '/notifications' },
         { id: '/favorites', label: 'Ulubione', icon: Heart, path: '/favorites' },
         { id: '/settings', label: 'Ustawienia', icon: Settings, path: '/settings' },
+
     ];
 
     const roleMap: { [key: string]: string } = {

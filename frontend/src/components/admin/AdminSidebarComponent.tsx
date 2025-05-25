@@ -1,5 +1,6 @@
+// src/components/admin/AdminSidebarComponent.tsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext.tsx";
 import {
     LogOut,
@@ -12,12 +13,13 @@ import {
     FileUser,
     Scale,
     Trophy,
-    ListChecks, // <--- NOWA IKONA
+    ListChecks,
     Settings,
     Search,
     ChevronLeft,
     UserCircle,
     DumbbellIcon,
+    ArrowRightLeft
 } from 'lucide-react';
 
 interface MenuItem {
@@ -29,6 +31,7 @@ interface MenuItem {
 
 const AdminSidebarComponent: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const [activeItem, setActiveItem] = useState<string>(location.pathname);
     const { user, logout } = useAuth();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -39,9 +42,9 @@ const AdminSidebarComponent: React.FC = () => {
     }, [location.pathname]);
 
     const menuItems: MenuItem[] = [
-        { id: '/admin/dashboard', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin/dashboard' },
-        { id: '/admin/users', label: 'Użytkownicy', icon: Users, path: '/admin/users' },
-        { id: '/admin/trainers', label: 'Trenerzy', icon: UserCog, path: '/admin/trainers' },
+        { id: '/admin', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin' },
+        { id: '/admin/user-management', label: 'Zarządzanie Użytkownikami', icon: Users, path: '/admin/user-management' },
+        { id: '/admin/trainer-management', label: 'Zarządzanie Trenerami', icon: UserCog, path: '/admin/trainer-management' },
         { id: '/admin/sessions', label: 'Sesje Trenerów', icon: CalendarDays, path: '/admin/sessions' },
         { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
         { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
@@ -62,6 +65,10 @@ const AdminSidebarComponent: React.FC = () => {
 
     const handleLogout = () => {
         logout();
+    };
+
+    const switchToUserDashboard = () => {
+        navigate('/dashboard');
     };
 
     const filteredMenuItems = menuItems.filter(item =>
@@ -100,7 +107,7 @@ const AdminSidebarComponent: React.FC = () => {
                 flex-shrink-0
             `}>
                 <div className={`bg-${accentColor}-600 p-1.5 rounded-lg flex-shrink-0 shadow-sm`}>
-                    <DumbbellIcon className={`w-6 h-6 text-white ${isSidebarCollapsed && 'hidden'}`} />
+                    <DumbbellIcon className="w-6 h-6 text-white" />
                 </div>
                 {!isSidebarCollapsed && (
                     <div className="overflow-hidden">
@@ -145,7 +152,7 @@ const AdminSidebarComponent: React.FC = () => {
                             transition-all duration-150 ease-in-out group
                             focus:outline-none focus:ring-2 focus:ring-${accentColor}-400 focus:ring-offset-1
                             ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
-                            ${ activeItem === item.path
+                            ${ activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/'))
                             ? `bg-${accentColor}-600 text-white font-semibold shadow-md hover:bg-${accentColor}-700`
                             : `text-gray-500 hover:bg-gray-100 hover:text-gray-800`
                         }`}
@@ -156,23 +163,23 @@ const AdminSidebarComponent: React.FC = () => {
                         <item.icon
                             className={`
                                 flex-shrink-0 w-5 h-5
-                                ${activeItem === item.path
+                                ${activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/'))
                                 ? 'text-white'
                                 : 'text-gray-400 group-hover:text-gray-500'
                             }`}
-                            strokeWidth={activeItem === item.path ? 2.2 : 2}
+                            strokeWidth={activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/')) ? 2.2 : 2}
                         />
                         {!isSidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     </Link>
                 ))}
             </nav>
 
-            <div className="p-3 border-t border-gray-200/70 flex-shrink-0">
+            <div className="p-3 border-t border-gray-200/70 flex-shrink-0 space-y-1.5">
                 {!isSidebarCollapsed && user && (
-                    <div className="flex items-center mb-2.5 p-1.5 rounded-md">
+                    <div className="flex items-center p-1.5 rounded-md mb-1">
                         <div className={`
-                            w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold
-                            bg-white text-${accentColor}-700 border border-gray-300 shadow-sm
+                            w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold shrink-0
+                            bg-white text-${accentColor}-700 border-2 border-${accentColor}-500 shadow-sm
                         `}>
                             {user.username ? user.username.substring(0, 1).toUpperCase() : <UserCircle size={20}/>}
                         </div>
@@ -186,18 +193,34 @@ const AdminSidebarComponent: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                <button
+                    onClick={switchToUserDashboard}
+                    title="Przełącz na Dashboard Użytkownika"
+                    className={`
+                        w-full flex items-center px-3 py-2.5 rounded-lg
+                        text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800
+                        transition-colors duration-150 ease-in-out group
+                        focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1
+                        ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
+                    `}
+                >
+                    <ArrowRightLeft className="flex-shrink-0 w-5 h-5 text-gray-500 group-hover:text-gray-600" strokeWidth={2} />
+                    {!isSidebarCollapsed && <span className="text-sm">Dashboard Użytkownika</span>}
+                </button>
+
                 <button
                     onClick={handleLogout}
                     title="Wyloguj się"
                     className={`
                         w-full flex items-center px-3 py-2.5 rounded-lg
-                        text-gray-500 hover:bg-gray-100 hover:text-gray-800
+                        text-gray-600 hover:bg-red-100 hover:text-red-700
                         transition-colors duration-150 ease-in-out group
-                        focus:outline-none focus:ring-2 focus:ring-${accentColor}-400 focus:ring-offset-1
+                        focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
                         ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
                     `}
                 >
-                    <LogOut className="flex-shrink-0 w-5 h-5 text-gray-400 group-hover:text-gray-500" strokeWidth={2} />
+                    <LogOut className="flex-shrink-0 w-5 h-5 text-gray-500 group-hover:text-red-600" strokeWidth={2} />
                     {!isSidebarCollapsed && <span className="text-sm">Wyloguj się</span>}
                 </button>
             </div>

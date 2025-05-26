@@ -1,11 +1,3 @@
-
-CREATE SEQUENCE users_seq
-    START WITH 1
-    INCREMENT BY 1
-    NOCACHE
-    NOCYCLE;
-
-
 CREATE OR REPLACE PROCEDURE add_user(
     p_username IN VARCHAR2,
     p_password_hash IN VARCHAR2,

@@ -1,5 +1,3 @@
-CREATE SEQUENCE trainers_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE;
-
 CREATE OR REPLACE PROCEDURE prc_create_trainer(
     p_user_id IN NUMBER,
     p_name IN VARCHAR2,

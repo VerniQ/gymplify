@@ -35,9 +35,6 @@ function App() {
                 <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                <Route path="/admin" element={<AdminDashboardPage/>}/>
-                <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
-                <Route path="/admin/exercises/" element={<ExercisesPage/>}/>
             </Route>
 
             <Route path={"/admin"} element={<ProtectedRoute />}>
@@ -47,6 +44,8 @@ function App() {
                         <Route path="/admin/muscle-groups" element={<MuscleGroupsPage />} />
                         <Route path="/admin/user-management" element={<UserManagementPage />} />
                         <Route path="/admin/trainer-management" element={user?.role === 'ADMIN' ? <TrainerManagementPage /> : <Navigate to="/dashboard" replace />} />
+                        <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
+                        <Route path="/admin/exercises/" element={<ExercisesPage/>}/>
                     </>
                 )}
             </Route>

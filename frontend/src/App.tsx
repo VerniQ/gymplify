@@ -40,6 +40,7 @@ function App() {
                 <Route path="/admin/exercises/" element={<ExercisesPage/>}/>
             </Route>
 
+            <Route path={"/admin"} element={<ProtectedRoute />}>
                 {user?.role === 'ADMIN' && (
                     <>
                         <Route path="/admin" element={<AdminDashboardPage />} />

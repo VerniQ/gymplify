@@ -37,7 +37,7 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Route>
 
-            <Route path="/admin" element={<ProtectedRoute />}>
+            <Route path={"/admin"} element={<ProtectedRoute />}>
                 {user?.role === 'ADMIN' && (
                     <>
                         <Route path="/admin" element={<AdminDashboardPage />} />

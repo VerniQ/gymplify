@@ -10,11 +10,7 @@ import {
     CalendarDays,
     Dumbbell as ExerciseIcon,
     ClipboardList,
-    FileUser,
-    Scale,
-    Trophy,
     ListChecks,
-    Settings,
     Search,
     ChevronLeft,
     UserCircle,
@@ -49,10 +45,6 @@ const AdminSidebarComponent: React.FC = () => {
         { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
         { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
         { id: '/admin/training-plans', label: 'Szablony Planów', icon: ClipboardList, path: '/admin/training-plans' },
-        { id: '/admin/personal-plans', label: 'Plany Osobiste', icon: FileUser, path: '/admin/personal-plans' },
-        { id: '/admin/weight-measurements', label: 'Pomiary Wagi', icon: Scale, path: '/admin/weight-measurements' },
-        { id: '/admin/leaderboards', label: 'Rankingi', icon: Trophy, path: '/admin/leaderboards' },
-        { id: '/admin/settings', label: 'Ustawienia Admina', icon: Settings, path: '/admin/settings' },
     ];
 
     const roleMap: { [key: string]: string } = {

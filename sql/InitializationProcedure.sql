@@ -23,7 +23,7 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
 
         IF temp = 0 THEN
             DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Próba utworzenia tabeli ' || p_table_name);
-            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Fragment SQL: ' || SUBSTR(p_sql, 1, 1000)); -- Pomocne do debugowania
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Fragment SQL: ' || SUBSTR(p_sql, 1, 1000));
             BEGIN
                 EXECUTE IMMEDIATE p_sql;
                 DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Tabela ' || p_table_name || ' utworzona pomyślnie.');

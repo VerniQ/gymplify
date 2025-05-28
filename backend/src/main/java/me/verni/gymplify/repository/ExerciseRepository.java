@@ -42,13 +42,12 @@ public class ExerciseRepository {
         public ExerciseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
             Long groupId = rs.getObject("GROUP_ID") == null ? null : rs.getLong("GROUP_ID");
             String groupName = null;
-            String muscleGroupText = null;
 
             try {
                 rs.findColumn("GROUP_NAME");
                 groupName = rs.getString("GROUP_NAME");
             } catch (SQLException e) {
-
+                log.trace("Kolumna GROUP_NAME nie znaleziona w ResultSet dla mapowania ExerciseDto.");
             }
 
             return new ExerciseDto(
@@ -68,26 +67,26 @@ public class ExerciseRepository {
         ExerciseDtoRowMapper exerciseDtoRowMapper = new ExerciseDtoRowMapper();
 
         this.getAllExercisesCall = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName("prc_get_all_exercises") // Zwraca group_name
+                .withProcedureName("prc_get_all_exercises")
                 .declareParameters(
                         new SqlOutParameter("p_exercises", OracleTypes.CURSOR, exerciseDtoRowMapper),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
 
         this.getExerciseByIdCall = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName("prc_get_exercise_details") // Zwraca group_name
+                .withProcedureName("prc_get_exercise_details")
                 .declareParameters(
                         new SqlParameter("p_exercise_id", Types.NUMERIC),
                         new SqlOutParameter("p_exercise_data", OracleTypes.CURSOR, exerciseDtoRowMapper),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
 
         this.findExercisesByMuscleGroupCall = new SimpleJdbcCall(jdbcTemplate)
-                .withProcedureName("prc_find_exercises_by_muscle_group") // Zwraca group_name
+                .withProcedureName("prc_find_exercises_by_muscle_group")
                 .declareParameters(
                         new SqlParameter("p_group_id", Types.NUMERIC),
                         new SqlOutParameter("p_exercises", OracleTypes.CURSOR, exerciseDtoRowMapper),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
 
         this.addExerciseCall = new SimpleJdbcCall(jdbcTemplate)
@@ -95,10 +94,9 @@ public class ExerciseRepository {
                 .declareParameters(
                         new SqlParameter("p_name", Types.VARCHAR),
                         new SqlParameter("p_description", Types.CLOB),
-                        // new SqlParameter("p_muscle_group", Types.VARCHAR), // USUNIĘTE
                         new SqlParameter("p_group_id", Types.NUMERIC),
                         new SqlOutParameter("p_exercise_id", Types.NUMERIC),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
 
         this.updateExerciseCall = new SimpleJdbcCall(jdbcTemplate)
@@ -107,30 +105,42 @@ public class ExerciseRepository {
                         new SqlParameter("p_exercise_id", Types.NUMERIC),
                         new SqlParameter("p_name", Types.VARCHAR),
                         new SqlParameter("p_description", Types.CLOB),
-                        // new SqlParameter("p_muscle_group", Types.VARCHAR), // USUNIĘTE
                         new SqlParameter("p_group_id", Types.NUMERIC),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
 
         this.deleteExerciseCall = new SimpleJdbcCall(jdbcTemplate)
                 .withProcedureName("prc_delete_exercise")
                 .declareParameters(
                         new SqlParameter("p_exercise_id", Types.NUMERIC),
-                        new SqlOutParameter("p_success", Types.BOOLEAN)
+                        new SqlOutParameter("p_success", Types.NUMERIC) // ZMIANA Z BOOLEAN NA NUMERIC
                 );
     }
+
+    private boolean checkSuccessFlag(Map<String, Object> result, String procedureName) {
+        Object successObj = result.get("p_success");
+        if (successObj == null) {
+            log.error("Procedura {} nie zwróciła flagi p_success.", procedureName);
+            throw new OperationFailedException("Procedura " + procedureName + " nie zwróciła statusu powodzenia.");
+        }
+        if (successObj instanceof Number) {
+            return ((Number) successObj).intValue() == 1;
+        }
+        log.error("Procedura {} zwróciła nieoczekiwany typ dla p_success: {}", procedureName, successObj.getClass().getName());
+        throw new OperationFailedException("Procedura " + procedureName + " zwróciła nieprawidłowy status powodzenia.");
+    }
+
 
     @SuppressWarnings("unchecked")
     public List<ExerciseDto> findAll() {
         try {
             Map<String, Object> result = getAllExercisesCall.execute();
-            Boolean success = (Boolean) result.get("p_success");
-            if (Boolean.TRUE.equals(success)) {
+            if (checkSuccessFlag(result, "prc_get_all_exercises")) {
                 List<ExerciseDto> exercises = (List<ExerciseDto>) result.get("p_exercises");
                 return exercises != null ? exercises : List.of();
             }
-            log.warn("Procedura prc_get_all_exercises zwróciła p_success=false");
-            throw new OperationFailedException("Nie udało się pobrać listy ćwiczeń (procedura zwróciła błąd).");
+            log.warn("Procedura prc_get_all_exercises zwróciła p_success=0 (błąd).");
+            throw new OperationFailedException("Nie udało się pobrać listy ćwiczeń (procedura zgłosiła błąd).");
         } catch (DataAccessException e) {
             log.error("Błąd DataAccessException podczas pobierania wszystkich ćwiczeń", e);
             throw new OperationFailedException("Błąd dostępu do danych podczas pobierania ćwiczeń: " + e.getMessage(), e);
@@ -141,12 +151,11 @@ public class ExerciseRepository {
     public Optional<ExerciseDto> findById(Long id) {
         try {
             Map<String, Object> result = getExerciseByIdCall.execute(Map.of("p_exercise_id", id));
-            Boolean success = (Boolean) result.get("p_success");
-            if (Boolean.TRUE.equals(success)) {
+            if (checkSuccessFlag(result, "prc_get_exercise_details")) {
                 List<ExerciseDto> list = (List<ExerciseDto>) result.get("p_exercise_data");
                 return list != null && !list.isEmpty() ? Optional.of(list.get(0)) : Optional.empty();
             }
-            log.info("Procedura prc_get_exercise_details nie znalazła ćwiczenia o ID {} lub zwróciła błąd.", id);
+            log.info("Procedura prc_get_exercise_details nie znalazła ćwiczenia o ID {} lub zwróciła błąd (p_success=0).", id);
             return Optional.empty();
         } catch (DataAccessException e) {
             log.error("Błąd DataAccessException podczas pobierania ćwiczenia o ID {}", id, e);
@@ -158,13 +167,12 @@ public class ExerciseRepository {
     public List<ExerciseDto> findByMuscleGroupId(Long groupId) {
         try {
             Map<String, Object> result = findExercisesByMuscleGroupCall.execute(Map.of("p_group_id", groupId));
-            Boolean success = (Boolean) result.get("p_success");
-            if (Boolean.TRUE.equals(success)) {
+            if (checkSuccessFlag(result, "prc_find_exercises_by_muscle_group")) {
                 List<ExerciseDto> exercises = (List<ExerciseDto>) result.get("p_exercises");
                 return exercises != null ? exercises : List.of();
             }
-            log.warn("Procedura prc_find_exercises_by_muscle_group zwróciła p_success=false dla grupy ID: {}", groupId);
-            throw new OperationFailedException("Nie udało się pobrać ćwiczeń dla grupy mięśniowej ID " + groupId + " (procedura zwróciła błąd lub grupa nie istnieje).");
+            log.warn("Procedura prc_find_exercises_by_muscle_group zwróciła p_success=0 dla grupy ID: {}", groupId);
+            throw new OperationFailedException("Nie udało się pobrać ćwiczeń dla grupy mięśniowej ID " + groupId + " (procedura zgłosiła błąd lub grupa nie istnieje).");
         } catch (DataAccessException e) {
             log.error("Błąd DataAccessException podczas pobierania ćwiczeń dla grupy ID: {}", groupId, e);
             throw new OperationFailedException("Błąd dostępu do danych podczas pobierania ćwiczeń dla grupy: " + e.getMessage(), e);
@@ -179,20 +187,19 @@ public class ExerciseRepository {
             params.put("p_group_id", requestDto.getGroupId());
 
             Map<String, Object> result = addExerciseCall.execute(params);
-            Boolean success = (Boolean) result.get("p_success");
 
-            if (Boolean.TRUE.equals(success)) {
+            if (checkSuccessFlag(result, "prc_create_exercise")) {
                 Object newExerciseIdObj = result.get("p_exercise_id");
                 if (newExerciseIdObj instanceof BigDecimal) {
                     return ((BigDecimal) newExerciseIdObj).longValue();
                 } else if (newExerciseIdObj instanceof Number) {
                     return ((Number) newExerciseIdObj).longValue();
                 }
-                log.error("Procedura prc_create_exercise zakończyła się sukcesem, ale nie zwróciła poprawnego ID ćwiczenia.");
-                throw new OperationFailedException("Procedura tworzenia ćwiczenia zakończyła się sukcesem, ale nie zwróciła poprawnego ID.");
+                log.error("Procedura prc_create_exercise zakończyła się sukcesem (p_success=1), ale nie zwróciła poprawnego ID ćwiczenia.");
+                throw new OperationFailedException("Procedura tworzenia ćwiczenia zwróciła sukces, ale nieprawidłowe ID.");
             } else {
-                log.warn("Procedura prc_create_exercise zwróciła p_success=false dla: {}", requestDto.getName());
-                throw new OperationFailedException("Nie udało się dodać ćwiczenia. Procedura PL/SQL zgłosiła błąd (np. wybrana grupa mięśniowa nie istnieje).");
+                log.warn("Procedura prc_create_exercise zwróciła p_success=0 dla: {}", requestDto.getName());
+                throw new OperationFailedException("Nie udało się dodać ćwiczenia. Procedura PL/SQL zgłosiła błąd walidacji lub wewnętrzny.");
             }
         } catch (DataAccessException e) {
             log.error("Błąd DataAccessException podczas dodawania ćwiczenia: {}", requestDto.getName(), e);
@@ -209,13 +216,10 @@ public class ExerciseRepository {
             params.put("p_group_id", requestDto.getGroupId());
 
             Map<String, Object> result = updateExerciseCall.execute(params);
-            Boolean success = (Boolean) result.get("p_success");
-            if (success == null) {
-                log.error("Procedura prc_update_exercise nie zwróciła statusu powodzenia dla ID: {}", id);
-                throw new OperationFailedException("Procedura aktualizacji ćwiczenia nie zwróciła statusu powodzenia.");
-            }
+            boolean success = checkSuccessFlag(result, "prc_update_exercise");
+
             if(!success) {
-                log.warn("Procedura prc_update_exercise zwróciła p_success=false dla ID: {} (np. ćwiczenie lub grupa nie istnieje).", id);
+                log.warn("Procedura prc_update_exercise zwróciła p_success=0 dla ID: {} (np. ćwiczenie lub grupa nie istnieje).", id);
             }
             return success;
         } catch (DataAccessException e) {
@@ -227,13 +231,10 @@ public class ExerciseRepository {
     public boolean deleteById(Long id) {
         try {
             Map<String, Object> result = deleteExerciseCall.execute(Map.of("p_exercise_id", id));
-            Boolean success = (Boolean) result.get("p_success");
-            if (success == null) {
-                log.error("Procedura prc_delete_exercise nie zwróciła statusu powodzenia dla ID: {}", id);
-                throw new OperationFailedException("Procedura usuwania ćwiczenia nie zwróciła statusu powodzenia.");
-            }
+            boolean success = checkSuccessFlag(result, "prc_delete_exercise");
+
             if(!success) {
-                log.warn("Procedura prc_delete_exercise zwróciła p_success=false dla ID: {} (np. ćwiczenie nie istnieje).", id);
+                log.warn("Procedura prc_delete_exercise zwróciła p_success=0 dla ID: {} (np. ćwiczenie nie istnieje).", id);
             }
             return success;
         } catch (DataAccessException e) {

@@ -3,12 +3,12 @@ CREATE OR REPLACE PROCEDURE prc_create_exercise(
     p_description IN EXERCISES.DESCRIPTION%TYPE,
     p_group_id IN EXERCISES.GROUP_ID%TYPE DEFAULT NULL,
     p_exercise_id OUT EXERCISES.EXERCISE_ID%TYPE,
-    p_success OUT BOOLEAN
+    p_success OUT NUMBER
 ) AS
     v_group_exists NUMBER;
     v_name_trimmed VARCHAR2(255);
 BEGIN
-    p_success := FALSE;
+    p_success := 0;
     p_exercise_id := NULL;
     v_name_trimmed := TRIM(p_name);
 
@@ -19,11 +19,6 @@ BEGIN
 
     IF LENGTH(v_name_trimmed) > 255 THEN
         DBMS_OUTPUT.PUT_LINE('Nazwa ćwiczenia (p_name) nie może przekraczać 255 znaków.');
-        RETURN;
-    END IF;
-
-    IF p_description IS NOT NULL AND DBMS_LOB.GETLENGTH(p_description) > 4000 THEN
-        DBMS_OUTPUT.PUT_LINE('Opis ćwiczenia (p_description) nie może przekraczać 4000 znaków.');
         RETURN;
     END IF;
 
@@ -48,13 +43,13 @@ BEGIN
     VALUES (p_exercise_id, v_name_trimmed, p_description, p_group_id);
 
     COMMIT;
-    p_success := TRUE;
+    p_success := 1;
     DBMS_OUTPUT.PUT_LINE('Ćwiczenie zostało pomyślnie utworzone z ID: ' || p_exercise_id);
 
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        p_success := FALSE;
+        p_success := 0;
         p_exercise_id := NULL;
         DBMS_OUTPUT.PUT_LINE('Błąd Oracle podczas tworzenia ćwiczenia: ' || SQLCODE || ' - ' || SQLERRM);
 END prc_create_exercise;

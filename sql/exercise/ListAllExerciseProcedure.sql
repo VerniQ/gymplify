@@ -1,9 +1,9 @@
 CREATE OR REPLACE PROCEDURE prc_get_all_exercises(
     p_exercises OUT SYS_REFCURSOR,
-    p_success OUT BOOLEAN
+    p_success OUT NUMBER
 ) AS
 BEGIN
-    p_success := FALSE;
+    p_success := 0;
 
     OPEN p_exercises FOR
         SELECT
@@ -18,12 +18,12 @@ BEGIN
         ORDER BY
             e.name;
 
-    p_success := TRUE;
+    p_success := 1;
     DBMS_OUTPUT.PUT_LINE('Lista ćwiczeń została pobrana.');
 
 EXCEPTION
     WHEN OTHERS THEN
-        p_success := FALSE;
+        p_success := 0;
         IF p_exercises%ISOPEN THEN
             CLOSE p_exercises;
         END IF;

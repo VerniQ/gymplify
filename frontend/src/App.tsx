@@ -10,23 +10,29 @@ import TrainingsPage from './pages/TrainingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage.tsx";
-import MuscleGroupsPage from "./pages/admin/muscle-group/MuscleGroupsPage.tsx";
-import ExercisesPage from "./pages/admin/exercise/ExercisesPage.tsx";
-import UserManagementPage from "./pages/admin/user-management/UserManagementPage.tsx";
-import TrainerManagementPage from "./pages/admin/trainer-management/TrainerManagementPage.tsx";
+
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import MuscleGroupsPage from "./pages/admin/muscle-group/MuscleGroupsPage";
+import ExercisesPage from "./pages/admin/exercise/ExercisesPage";
+import UserManagementPage from "./pages/admin/user-management/UserManagementPage";
+import TrainerManagementPage from "./pages/admin/trainer-management/TrainerManagementPage";
+import TrainingPlansPage from "./pages/admin/training-plans/TrainingPlansPage";
 
 function App() {
     const { isAuthenticated, isLoading, user } = useAuth();
 
     if (isLoading) {
-        return <div className="flex justify-center items-center min-h-screen bg-gray-100"><p className="text-lg text-gray-600">Ładowanie aplikacji...</p></div>;
+        return (
+            <div className="flex justify-center items-center min-h-screen bg-gray-100">
+                <p className="text-lg text-gray-600">Ładowanie aplikacji...</p>
+            </div>
+        );
     }
 
     return (
         <Routes>
-            <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
-            <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to={user?.role === 'ADMIN' ? "/admin" : "/dashboard"} replace />} />
+            <Route path="/register" element={!isAuthenticated ? <RegisterPage /> : <Navigate to={user?.role === 'ADMIN' ? "/admin" : "/dashboard"} replace />} />
 
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
@@ -34,29 +40,26 @@ function App() {
                 <Route path="/notifications" element={<NotificationsPage />} />
                 <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Route>
+                <Route path="/" element={<Navigate to={user?.role === 'ADMIN' ? "/admin" : "/dashboard"} replace />} />
 
-            <Route path={"/admin"} element={<ProtectedRoute />}>
                 {user?.role === 'ADMIN' && (
                     <>
                         <Route path="/admin" element={<AdminDashboardPage />} />
-                        <Route path="/admin/muscle-groups" element={<MuscleGroupsPage />} />
                         <Route path="/admin/user-management" element={<UserManagementPage />} />
-                        <Route path="/admin/trainer-management" element={user?.role === 'ADMIN' ? <TrainerManagementPage /> : <Navigate to="/dashboard" replace />} />
-                        <Route path="/admin/muscle-groups" element={<MuscleGroupsPage/>}/>
-                        <Route path="/admin/exercises/" element={<ExercisesPage/>}/>
+                        <Route path="/admin/trainer-management" element={<TrainerManagementPage />} />
+                        <Route path="/admin/muscle-groups" element={<MuscleGroupsPage />} />
+                        <Route path="/admin/exercises" element={<ExercisesPage />} />
+                        <Route path="/admin/training-plans" element={<TrainingPlansPage />} />
                     </>
                 )}
             </Route>
 
             <Route
-                path="/"
+                path="*"
                 element={
-                    !isAuthenticated ? <Navigate to="/login" replace /> : <Navigate to="/dashboard" replace />
+                    <Navigate to={isAuthenticated ? (user?.role === 'ADMIN' ? "/admin" : "/dashboard") : "/login"} replace />
                 }
             />
-            <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
         </Routes>
     );
 }

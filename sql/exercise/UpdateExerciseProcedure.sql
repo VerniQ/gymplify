@@ -3,13 +3,13 @@ CREATE OR REPLACE PROCEDURE prc_update_exercise(
     p_name IN EXERCISES.NAME%TYPE,
     p_description IN EXERCISES.DESCRIPTION%TYPE,
     p_group_id IN EXERCISES.GROUP_ID%TYPE,
-    p_success OUT BOOLEAN
+    p_success OUT NUMBER
 ) AS
     v_exercise_exists NUMBER;
     v_group_exists    NUMBER;
     v_name_trimmed    VARCHAR2(255);
 BEGIN
-    p_success := FALSE;
+    p_success := 0;
 
     IF p_exercise_id IS NULL THEN
         DBMS_OUTPUT.PUT_LINE('ID ćwiczenia (p_exercise_id) nie może być puste.');
@@ -70,13 +70,13 @@ BEGIN
     END IF;
 
     COMMIT;
-    p_success := TRUE;
+    p_success := 1;
     DBMS_OUTPUT.PUT_LINE('Ćwiczenie o ID ' || p_exercise_id || ' zostało pomyślnie zaktualizowane.');
 
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
-        p_success := FALSE;
-        DBMS_OUTPUT.PUT_LINE('Błąd Oracle podczas aktualizacji ćwiczenia: ' || SQLCODE || ' - ' || SQLERRM);
+        p_success := 0;
+        DBMS_OUTPUT.PUT_LINE('Błąd Oracle podczas aktualizacji ćwiczenia ID ' || p_exercise_id || ': ' || SQLCODE || ' - ' || SQLERRM);
 END prc_update_exercise;
 /

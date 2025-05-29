@@ -17,6 +17,7 @@ import ExercisesPage from "./pages/admin/exercise/ExercisesPage";
 import UserManagementPage from "./pages/admin/user-management/UserManagementPage";
 import TrainerManagementPage from "./pages/admin/trainer-management/TrainerManagementPage";
 import TrainingPlansPage from "./pages/admin/training-plans/TrainingPlansPage";
+import TrainerSessionsPage from "./pages/admin/trainer-sessions/TrainerSessionsPage.tsx";
 
 function App() {
     const { isAuthenticated, isLoading, user } = useAuth();
@@ -50,6 +51,7 @@ function App() {
                         <Route path="/admin/muscle-groups" element={<MuscleGroupsPage />} />
                         <Route path="/admin/exercises" element={<ExercisesPage />} />
                         <Route path="/admin/training-plans" element={<TrainingPlansPage />} />
+                        <Route path="/admin/trainer-sessions" element={<TrainerSessionsPage />} />
                     </>
                 )}
             </Route>

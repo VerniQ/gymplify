@@ -4,7 +4,7 @@ import AdminSidebarComponent from '../../../components/admin/AdminSidebarCompone
 import { ExerciseService } from '../../../services/ExerciseService';
 import { Exercise, ExercisePayload, MuscleGroupSelection } from '../../../types/ExerciseTypes';
 import { MuscleGroupService } from '../../../services/MuscleGroupService';
-import { MuscleGroup as MuscleGroupFromServiceApiType } from '../../../types/MuscleGroupTypes';
+import { MuscleGroup } from '../../../types/MuscleGroupTypes'; // Używamy teraz typu MuscleGroup
 
 import {
     PlusCircle,
@@ -15,7 +15,8 @@ import {
     Loader2,
     AlertTriangle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    X,
 } from 'lucide-react';
 
 interface CustomError extends Error {
@@ -29,6 +30,7 @@ const ExercisesPage: React.FC = () => {
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [availableMuscleGroups, setAvailableMuscleGroups] = useState<MuscleGroupSelection[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isFormLoading, setIsFormLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -44,7 +46,7 @@ const ExercisesPage: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 7;
-    const accentColor = 'blue'; // ZMIANA NA BLUE
+    const ACCENT_COLOR = 'blue';
 
     const getErrorMessage = (err: unknown): string => {
         if (typeof err === 'object' && err !== null && 'response' in err) {
@@ -58,47 +60,54 @@ const ExercisesPage: React.FC = () => {
     };
 
     const loadExercises = useCallback(async () => {
-        setIsLoading(true);
         setError(null);
         try {
             const data = await ExerciseService.getAllExercises();
             const validData = data.filter(ex => ex.exerciseId != null);
-            setExercises(validData);
+            setExercises(validData.sort((a,b) => a.name.localeCompare(b.name)));
         } catch (err: unknown) {
             const errorMessage = getErrorMessage(err);
             setError(errorMessage || 'Wystąpił nieoczekiwany błąd podczas ładowania ćwiczeń.');
             console.error('Load Exercises Error:', err);
-        } finally {
-            setIsLoading(false);
         }
     }, []);
 
     const loadMuscleGroupsForSelect = useCallback(async () => {
         try {
-            const dataFromService: MuscleGroupFromServiceApiType[] = await MuscleGroupService.getAllMuscleGroups();
+            // Zakładamy, że MuscleGroupService.getAllMuscleGroups() zwraca MuscleGroup[]
+            // gdzie MuscleGroup to { id: string; name: string; description: string | null; }
+            const dataFromService: MuscleGroup[] = await MuscleGroupService.getAllMuscleGroups();
             const validGroups: MuscleGroupSelection[] = dataFromService
                 .filter(mg => mg.id != null)
-                .map(mg => ({ id: Number(mg.id), name: mg.name }));
+                .map(mg => ({ id: Number(mg.id), name: mg.name })); // Konwertujemy string id na number
             setAvailableMuscleGroups(validGroups);
         } catch (err) {
             console.error("Nie udało się załadować grup mięśniowych dla formularza:", err);
-            setError("Nie udało się załadować listy grup mięśniowych. Sprawdź konsolę po więcej informacji.");
+            setError("Nie udało się załadować listy grup mięśniowych.");
         }
     }, []);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await loadExercises();
-                await loadMuscleGroupsForSelect();
-            } catch (e) {
-                const errorMessage = getErrorMessage(e);
-                setError(errorMessage || 'Wystąpił błąd podczas ładowania danych.');
-                console.error('Fetch Data Error:', e);
-            }
-        };
-        void fetchData();
+    const loadData = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            await Promise.all([
+                loadExercises(),
+                loadMuscleGroupsForSelect()
+            ]);
+        } catch (e) {
+            const errorMessage = getErrorMessage(e);
+            setError(errorMessage || 'Wystąpił błąd podczas ładowania danych.');
+            console.error('Fetch Data Error:', e);
+        } finally {
+            setIsLoading(false);
+        }
     }, [loadExercises, loadMuscleGroupsForSelect]);
+
+
+    useEffect(() => {
+        loadData().catch(console.error);
+    }, [loadData]);
 
 
     const handleOpenModal = (mode: 'add' | 'edit', exercise?: Exercise) => {
@@ -140,7 +149,7 @@ const ExercisesPage: React.FC = () => {
         }));
     };
 
-    const handleSaveExercise = async (e: React.FormEvent) => {
+    const handleSaveChanges = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
@@ -152,7 +161,7 @@ const ExercisesPage: React.FC = () => {
             setError("Wybór grupy mięśniowej jest wymagany.");
             return;
         }
-        setIsLoading(true);
+        setIsFormLoading(true);
 
         const payload: ExercisePayload = {
             name: formData.name.trim(),
@@ -167,7 +176,7 @@ const ExercisesPage: React.FC = () => {
                 await ExerciseService.updateExercise(currentExercise.exerciseId, payload);
             } else if (modalMode === 'edit') {
                 setError("Nie można zapisać zmian: nieprawidłowe ID ćwiczenia.");
-                setIsLoading(false);
+                setIsFormLoading(false);
                 return;
             }
             await loadExercises();
@@ -178,11 +187,11 @@ const ExercisesPage: React.FC = () => {
             setError(errorMessage || `Wystąpił nieoczekiwany błąd podczas ${actionType} ćwiczenia.`);
             console.error(`Save Exercise Error (${actionType}):`, err);
         } finally {
-            setIsLoading(false);
+            setIsFormLoading(false);
         }
     };
 
-    const handleDeleteClick = (idInput: number | undefined) => {
+    const handleDeleteClick = (idInput: number | undefined | null) => {
         setError(null);
         if (idInput == null) {
             setError("Nie można usunąć ćwiczenia: nieprawidłowe ID.");
@@ -195,10 +204,11 @@ const ExercisesPage: React.FC = () => {
     const confirmDelete = async () => {
         if (deletingExerciseId == null) {
             setError("Nie można usunąć ćwiczenia: nieprawidłowe ID.");
-            setShowDeleteConfirm(false); setDeletingExerciseId(null);
+            setShowDeleteConfirm(false);
+            setDeletingExerciseId(null);
             return;
         }
-        setIsLoading(true);
+        setIsFormLoading(true);
         setError(null);
         try {
             await ExerciseService.deleteExercise(deletingExerciseId);
@@ -208,7 +218,7 @@ const ExercisesPage: React.FC = () => {
             setError(errorMessage || 'Wystąpił nieoczekiwany błąd podczas usuwania ćwiczenia.');
             console.error('Delete Exercise Error:', err);
         } finally {
-            setIsLoading(false);
+            setIsFormLoading(false);
             setShowDeleteConfirm(false);
             setDeletingExerciseId(null);
         }
@@ -233,7 +243,7 @@ const ExercisesPage: React.FC = () => {
 
     const renderTableContent = () => {
         if (isLoading && exercises.length === 0 && !error) {
-            return ( <div className="p-10 flex flex-col items-center justify-center text-gray-500"> <Loader2 className={`w-12 h-12 animate-spin mb-4 text-${accentColor}-500`} /> <p>Ładowanie danych...</p> </div> );
+            return ( <div className="p-10 flex flex-col items-center justify-center text-gray-500"> <Loader2 className={`w-12 h-12 animate-spin mb-4 text-${ACCENT_COLOR}-500`} /> <p>Ładowanie danych...</p> </div> );
         }
         if (!isLoading && paginatedExercises.length === 0 && searchTerm && !error) {
             return ( <div className="p-10 text-center text-gray-500"> <Search size={48} className="mx-auto mb-4 opacity-50" /> <p className="text-lg font-medium">Brak wyników dla "{searchTerm}"</p> <p className="text-sm">Spróbuj innego wyszukiwania lub wyczyść filtry.</p> </div> );
@@ -255,7 +265,7 @@ const ExercisesPage: React.FC = () => {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                         {paginatedExercises.map((exercise) => (
-                            <tr key={exercise.exerciseId} className="hover:bg-gray-50/70 transition-colors">
+                            <tr key={exercise.exerciseId} className="hover:bg-gray-50/70 transition-colors group">
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{exercise.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                                     {exercise.groupName || (exercise.groupId != null ? `ID Grupy: ${exercise.groupId}` : <span className="italic text-gray-400">Nieprzypisane</span>)}
@@ -263,11 +273,11 @@ const ExercisesPage: React.FC = () => {
                                 <td className="px-6 py-4 text-sm text-gray-500 hidden lg:table-cell max-w-xs truncate" title={exercise.description || ''}>
                                     {exercise.description ? (exercise.description.length > 40 ? exercise.description.substring(0, 40) + '...' : exercise.description) : <span className="italic text-gray-400">Brak opisu</span>}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
+                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-1">
                                     <button
                                         onClick={() => handleOpenModal('edit', exercise)}
                                         title="Edytuj"
-                                        className={`p-1.5 rounded-md transition-colors duration-150 ease-in-out text-gray-500 hover:text-${accentColor}-700 hover:bg-${accentColor}-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-${accentColor}-500`}
+                                        className={`p-1.5 text-gray-400 hover:text-${ACCENT_COLOR}-600 rounded-md hover:bg-${ACCENT_COLOR}-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100`}
                                         disabled={exercise.exerciseId == null}
                                     >
                                         <Edit3 size={18} strokeWidth={2} />
@@ -275,7 +285,7 @@ const ExercisesPage: React.FC = () => {
                                     <button
                                         onClick={() => handleDeleteClick(exercise.exerciseId)}
                                         title="Usuń"
-                                        className={`p-1.5 rounded-md transition-colors duration-150 ease-in-out text-gray-500 hover:text-red-700 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-red-500`}
+                                        className="p-1.5 text-gray-400 hover:text-red-600 rounded-md hover:bg-red-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100"
                                         disabled={exercise.exerciseId == null}
                                     >
                                         <Trash2 size={18} strokeWidth={2} />
@@ -291,37 +301,41 @@ const ExercisesPage: React.FC = () => {
         return null;
     };
 
+
     return (
         <div className="flex min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
             <AdminSidebarComponent />
             <main className="flex-1 p-6 md:p-8 overflow-y-auto">
                 <header className="mb-8">
                     <div className="flex items-center space-x-3 mb-2">
-                        <Dumbbell className={`w-8 h-8 text-${accentColor}-600`} />
+                        <Dumbbell className={`w-8 h-8 text-${ACCENT_COLOR}-600`} />
                         <h1 className="text-3xl font-bold text-slate-800">Zarządzanie Ćwiczeniami</h1>
                     </div>
                     <p className="text-gray-500">Dodawaj, edytuj i usuwaj ćwiczenia dostępne w systemie.</p>
                 </header>
 
-                <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="relative w-full sm:flex-1">
+                <div className="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="relative w-full md:w-auto md:flex-grow max-w-md">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Szukaj ćwiczeń..."
-                            className={`w-full pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
+                            className={`w-50 pl-10 pr-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:border-${ACCENT_COLOR}-500`}
                             value={searchTerm}
                             onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
-                    <button
-                        onClick={() => handleOpenModal('add')}
-                        className={`inline-flex items-center justify-center px-4 py-2.5 bg-${accentColor}-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-${accentColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${accentColor}-500 transition-colors whitespace-nowrap sm:ml-4 mt-2 sm:mt-0`}
-                    >
-                        <PlusCircle size={18} className="mr-2" />
-                        Dodaj nowe ćwiczenie
-                    </button>
+                    <div className="mt-2 md:mt-0 md:ml-4">
+                        <button
+                            onClick={() => handleOpenModal('add')}
+                            className={`inline-flex items-center justify-center px-4 py-2.5 bg-${ACCENT_COLOR}-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-${ACCENT_COLOR}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${ACCENT_COLOR}-500 transition-colors whitespace-nowrap`}
+                        >
+                            <PlusCircle size={18} className="mr-2" />
+                            Dodaj Ćwiczenie
+                        </button>
+                    </div>
                 </div>
+
 
                 {error && !isModalOpen && !showDeleteConfirm && (
                     <div className={`mb-4 p-4 text-sm text-red-700 bg-red-100 border border-red-300 rounded-lg flex items-center`}>
@@ -358,11 +372,14 @@ const ExercisesPage: React.FC = () => {
                 {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm p-4">
                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all">
-                            <form onSubmit={handleSaveExercise}>
-                                <div className="px-6 py-5 border-b border-gray-200">
+                            <form onSubmit={handleSaveChanges}>
+                                <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
                                     <h3 className="text-xl font-semibold text-slate-700">
                                         {modalMode === 'add' ? 'Dodaj nowe ćwiczenie' : 'Edytuj ćwiczenie'}
                                     </h3>
+                                    <button type="button" onClick={handleCloseModal} className={`p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100`}>
+                                        <X size={24}/>
+                                    </button>
                                 </div>
                                 <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
                                     {error && (
@@ -381,7 +398,7 @@ const ExercisesPage: React.FC = () => {
                                             name="name"
                                             value={formData.name}
                                             onChange={handleFormChange}
-                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
+                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:border-${ACCENT_COLOR}-500`}
                                             required
                                             autoFocus
                                         />
@@ -395,7 +412,7 @@ const ExercisesPage: React.FC = () => {
                                             name="groupId"
                                             value={formData.groupId?.toString() || ''}
                                             onChange={handleFormChange}
-                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
+                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:border-${ACCENT_COLOR}-500`}
                                             required
                                         >
                                             <option value="">-- Wybierz grupę --</option>
@@ -405,6 +422,7 @@ const ExercisesPage: React.FC = () => {
                                                 </option>
                                             ))}
                                         </select>
+                                        {availableMuscleGroups.length === 0 && !isLoading && <p className="text-xs text-red-500 mt-1">Brak zdefiniowanych grup mięśniowych. Dodaj je najpierw.</p>}
                                     </div>
                                     <div>
                                         <label htmlFor="exercise_description_input" className="block text-sm font-medium text-gray-700 mb-1">
@@ -416,7 +434,7 @@ const ExercisesPage: React.FC = () => {
                                             value={formData.description || ''}
                                             onChange={handleFormChange}
                                             rows={4}
-                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${accentColor}-500 focus:border-${accentColor}-500`}
+                                            className={`w-full px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:border-${ACCENT_COLOR}-500`}
                                         />
                                     </div>
                                 </div>
@@ -424,17 +442,17 @@ const ExercisesPage: React.FC = () => {
                                     <button
                                         type="button"
                                         onClick={handleCloseModal}
-                                        disabled={isLoading}
+                                        disabled={isFormLoading}
                                         className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
                                     >
                                         Anuluj
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={isLoading || !formData.name.trim() || formData.groupId == null || formData.groupId === 0}
-                                        className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-${accentColor}-600 rounded-lg shadow-sm hover:bg-${accentColor}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${accentColor}-500 disabled:opacity-50 min-w-[90px]`}
+                                        disabled={isFormLoading || !formData.name.trim() || formData.groupId == null || formData.groupId === 0}
+                                        className={`inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-${ACCENT_COLOR}-600 rounded-lg shadow-sm hover:bg-${ACCENT_COLOR}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${ACCENT_COLOR}-500 disabled:opacity-50 min-w-[90px]`}
                                     >
-                                        {isLoading ? (
+                                        {isFormLoading ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />
                                         ) : (
                                             modalMode === 'add' ? 'Dodaj' : 'Zapisz'
@@ -466,19 +484,27 @@ const ExercisesPage: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            {error && (
+                                <div className="px-6 pb-2">
+                                    <div className={`p-3 text-sm text-red-700 bg-red-100 border border-red-300 rounded-md flex items-center`}>
+                                        <AlertTriangle size={18} className="mr-2 flex-shrink-0" />
+                                        <span>{error}</span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="px-6 py-4 bg-gray-50 flex flex-col sm:flex-row-reverse gap-3 rounded-b-xl">
                                 <button
                                     type="button"
                                     onClick={confirmDelete}
-                                    disabled={isLoading}
+                                    disabled={isFormLoading}
                                     className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm disabled:opacity-50 min-w-[100px]"
                                 >
-                                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Usuń'}
+                                    {isFormLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Usuń'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => {setShowDeleteConfirm(false); setDeletingExerciseId(null); setError(null);}}
-                                    disabled={isLoading}
+                                    disabled={isFormLoading}
                                     className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm disabled:opacity-50"
                                 >
                                     Anuluj

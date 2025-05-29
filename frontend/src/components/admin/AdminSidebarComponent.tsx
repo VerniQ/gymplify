@@ -37,15 +37,15 @@ const AdminSidebarComponent: React.FC = () => {
         setActiveItem(location.pathname);
     }, [location.pathname]);
 
-    const menuItems: MenuItem[] = [
-        { id: '/admin', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin' },
-        { id: '/admin/user-management', label: 'Zarządzanie Użytkownikami', icon: Users, path: '/admin/user-management' },
-        { id: '/admin/trainer-management', label: 'Zarządzanie Trenerami', icon: UserCog, path: '/admin/trainer-management' },
-        { id: '/admin/sessions', label: 'Sesje Trenerów', icon: CalendarDays, path: '/admin/sessions' },
-        { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
-        { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
-        { id: '/admin/training-plans', label: 'Szablony Planów', icon: ClipboardList, path: '/admin/training-plans' },
-    ];
+                const menuItems: MenuItem[] = [
+                    { id: '/admin', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin' },
+                    { id: '/admin/user-management', label: 'Zarządzanie Użytkownikami', icon: Users, path: '/admin/user-management' },
+                    { id: '/admin/trainer-management', label: 'Zarządzanie Trenerami', icon: UserCog, path: '/admin/trainer-management' },
+                    { id: '/admin/trainer-sessions', label: 'Sesje Trenerów', icon: CalendarDays, path: '/admin/trainer-sessions' },
+                    { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
+                    { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
+                    { id: '/admin/training-plans', label: 'Szablony Planów', icon: ClipboardList, path: '/admin/training-plans' },
+                ];
 
     const roleMap: { [key: string]: string } = {
         USER: 'Użytkownik',

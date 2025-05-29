@@ -1,6 +1,5 @@
 
 CREATE OR REPLACE PACKAGE PKG_APP_STATISTICS AS
-
     TYPE ty_role_stat_record IS RECORD (
                                            role_name USERS.ROLE%TYPE,
                                            user_count NUMBER
@@ -30,10 +29,11 @@ CREATE OR REPLACE PACKAGE PKG_APP_STATISTICS AS
                                                  );
     TYPE ty_exercise_popularity_table IS TABLE OF ty_exercise_popularity_record INDEX BY PLS_INTEGER;
 
-    -- I. User Statistics
     FUNCTION GetTotalUserCount RETURN NUMBER;
 
+
     FUNCTION GetUserCountByRole_Typed RETURN SYS_REFCURSOR;
+
 
     PROCEDURE GetNewUsersByPeriod (
         p_start_date IN DATE,
@@ -52,6 +52,7 @@ CREATE OR REPLACE PACKAGE PKG_APP_STATISTICS AS
     PROCEDURE GetExerciseCountByMuscleGroup (
         p_exercise_muscle_group_stats OUT SYS_REFCURSOR,
         p_success OUT NUMBER
+
     );
 
     FUNCTION GetMostPopularExercisesInPlans_Typed (
@@ -61,14 +62,13 @@ CREATE OR REPLACE PACKAGE PKG_APP_STATISTICS AS
     FUNCTION GetMostPopularExercisesInLeaderboard_Typed (
         p_top_n IN NUMBER DEFAULT 10
     ) RETURN SYS_REFCURSOR;
-
+    
     PROCEDURE GetMostAssignedTrainingPlans (
         p_top_n IN NUMBER DEFAULT 5,
         p_popular_plans OUT SYS_REFCURSOR,
         p_success OUT NUMBER
     );
 
-    -- IV. Leaderboard Statistics
     PROCEDURE GetLeaderboardRankingsForExercise (
         p_exercise_id IN EXERCISES.EXERCISE_ID%TYPE,
         p_top_n IN NUMBER DEFAULT 10,

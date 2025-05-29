@@ -1,4 +1,3 @@
-// src/components/admin/AdminSidebarComponent.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext.tsx";
@@ -15,7 +14,8 @@ import {
     ChevronLeft,
     UserCircle,
     DumbbellIcon,
-    ArrowRightLeft
+    ArrowRightLeft,
+    BarChart3 as StatisticsIcon
 } from 'lucide-react';
 
 interface MenuItem {
@@ -34,18 +34,27 @@ const AdminSidebarComponent: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        setActiveItem(location.pathname);
+        if (location.pathname.startsWith('/admin/statistics')) {
+            setActiveItem('/admin/statistics');
+        } else if (location.pathname.startsWith('/admin/') && location.pathname !== '/admin') {
+            setActiveItem(location.pathname);
+        } else if (location.pathname === '/admin') {
+            setActiveItem('/admin');
+        } else {
+            setActiveItem(location.pathname);
+        }
     }, [location.pathname]);
 
-                const menuItems: MenuItem[] = [
-                    { id: '/admin', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin' },
-                    { id: '/admin/user-management', label: 'Zarządzanie Użytkownikami', icon: Users, path: '/admin/user-management' },
-                    { id: '/admin/trainer-management', label: 'Zarządzanie Trenerami', icon: UserCog, path: '/admin/trainer-management' },
-                    { id: '/admin/trainer-sessions', label: 'Sesje Trenerów', icon: CalendarDays, path: '/admin/trainer-sessions' },
-                    { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
-                    { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
-                    { id: '/admin/training-plans', label: 'Szablony Planów', icon: ClipboardList, path: '/admin/training-plans' },
-                ];
+    const menuItems: MenuItem[] = [
+        { id: '/admin', label: 'Pulpit Admina', icon: LayoutDashboard, path: '/admin' },
+        { id: '/admin/user-management', label: 'Zarządzanie Użytkownikami', icon: Users, path: '/admin/user-management' },
+        { id: '/admin/trainer-management', label: 'Zarządzanie Trenerami', icon: UserCog, path: '/admin/trainer-management' },
+        { id: '/admin/trainer-sessions', label: 'Sesje Trenerów', icon: CalendarDays, path: '/admin/trainer-sessions' },
+        { id: '/admin/exercises', label: 'Ćwiczenia', icon: ExerciseIcon, path: '/admin/exercises' },
+        { id: '/admin/muscle-groups', label: 'Grupy Mięśniowe', icon: ListChecks, path: '/admin/muscle-groups' },
+        { id: '/admin/training-plans', label: 'Szablony Planów', icon: ClipboardList, path: '/admin/training-plans' },
+        { id: '/admin/statistics', label: 'Statystyki Aplikacji', icon: StatisticsIcon, path: '/admin/statistics' },
+    ];
 
     const roleMap: { [key: string]: string } = {
         USER: 'Użytkownik',
@@ -144,22 +153,23 @@ const AdminSidebarComponent: React.FC = () => {
                             transition-all duration-150 ease-in-out group
                             focus:outline-none focus:ring-2 focus:ring-${accentColor}-400 focus:ring-offset-1
                             ${isSidebarCollapsed ? 'justify-center' : 'space-x-3'}
-                            ${ activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/'))
+                            ${ activeItem === item.path
                             ? `bg-${accentColor}-600 text-white font-semibold shadow-md hover:bg-${accentColor}-700`
                             : `text-gray-500 hover:bg-gray-100 hover:text-gray-800`
                         }`}
                         onClick={() => {
+                            setActiveItem(item.path);
                             setSearchTerm('');
                         }}
                     >
                         <item.icon
                             className={`
                                 flex-shrink-0 w-5 h-5
-                                ${activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/'))
+                                ${activeItem === item.path
                                 ? 'text-white'
                                 : 'text-gray-400 group-hover:text-gray-500'
                             }`}
-                            strokeWidth={activeItem === item.path || (item.path === '/admin' && location.pathname.startsWith('/admin/')) ? 2.2 : 2}
+                            strokeWidth={activeItem === item.path ? 2.2 : 2}
                         />
                         {!isSidebarCollapsed && <span className="text-sm">{item.label}</span>}
                     </Link>

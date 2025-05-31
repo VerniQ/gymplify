@@ -1,4 +1,3 @@
-// src/pages/admin/trainer-management/TrainerManagementPage.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import AdminSidebarComponent from '../../../components/admin/AdminSidebarComponent';
 import { AdminTrainerService } from '../../../services/AdminTrainerService';

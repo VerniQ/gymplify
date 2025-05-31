@@ -1,85 +1,42 @@
-import React, { useState } from 'react';
+import React from 'react';
 import SidebarComponent from "../components/SidebarComponent";
-import { Settings, User, Lock, BellRing, Palette } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { HardHat, AlertTriangle } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
-    const [activeTab, setActiveTab] = useState('profile');
-
-    const renderContent = () => {
-        switch (activeTab) {
-            case 'profile':
-                return (
-                    <div>
-                        <h3 className="text-lg font-medium text-slate-700 mb-3">Informacje o profilu</h3>
-                        <p className="text-sm text-gray-600">Tutaj możesz edytować swoje dane osobowe, zdjęcie profilowe itp.</p>
-                    </div>
-                );
-            case 'security':
-                return (
-                    <div>
-                        <h3 className="text-lg font-medium text-slate-700 mb-3">Bezpieczeństwo</h3>
-                        <p className="text-sm text-gray-600">Zmień hasło, zarządzaj dwuetapową weryfikacją.</p>
-                    </div>
-                );
-            case 'notifications':
-                return (
-                    <div>
-                        <h3 className="text-lg font-medium text-slate-700 mb-3">Powiadomienia</h3>
-                        <p className="text-sm text-gray-600">Skonfiguruj, jakie powiadomienia chcesz otrzymywać.</p>
-                    </div>
-                );
-            case 'appearance':
-                return (
-                    <div>
-                        <h3 className="text-lg font-medium text-slate-700 mb-3">Wygląd</h3>
-                        <p className="text-sm text-gray-600">Dostosuj motyw aplikacji (np. tryb ciemny/jasny, kolory akcentów).</p>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
-    const tabs = [
-        { id: 'profile', label: 'Profil', icon: User },
-        { id: 'security', label: 'Bezpieczeństwo', icon: Lock },
-        { id: 'notifications', label: 'Powiadomienia', icon: BellRing },
-        { id: 'appearance', label: 'Wygląd', icon: Palette },
-    ];
+    const { user } = useAuth();
 
     return (
         <div className="flex min-h-screen bg-gray-50">
             <SidebarComponent />
-            <main className="flex-1 p-6 md:p-8 overflow-y-auto">
-                <header className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-800 flex items-center">
-                        <Settings size={32} className="mr-3 text-gray-500" />
-                        Ustawienia
-                    </h1>
-                    <p className="text-gray-500 mt-1">Zarządzaj swoim kontem i preferencjami aplikacji.</p>
-                </header>
 
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200/80">
-                    <div className="flex border-b border-gray-200/80">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-3 text-sm font-medium flex items-center space-x-2
-                                    ${activeTab === tab.id
-                                    ? 'border-b-2 border-blue-600 text-blue-600'
-                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50/50'
-                                }
-                                `}
-                            >
-                                <tab.icon size={16} />
-                                <span>{tab.label}</span>
-                            </button>
-                        ))}
+            <main className="flex-1 p-6 md:p-8 overflow-y-auto flex flex-col items-center justify-center">
+                <div className="text-center p-10 bg-white rounded-xl shadow-xl border border-gray-200/80 max-w-lg">
+                    <HardHat size={64} className="mx-auto text-yellow-500 mb-6" />
+                    <h1 className="text-3xl font-bold text-slate-800 mb-3">
+                        Panel Ustawień
+                    </h1>
+                    <p className="text-xl text-gray-600 mb-2">
+                        Witaj{user?.username ? `, ${user.username}` : ''}!
+                    </p>
+                    <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 rounded-md">
+                        <div className="flex">
+                            <div className="flex-shrink-0">
+                                <AlertTriangle className="h-5 w-5 text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm font-medium">
+                                    Strona w budowie!
+                                </p>
+                                <p className="text-sm">
+                                    Pracujemy nad nowymi funkcjami. Wkrótce znajdziesz tutaj przegląd swojej aktywności i postępów.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="p-6">
-                        {renderContent()}
-                    </div>
+                    <p className="text-gray-500 mt-8 text-sm">
+                        Dziękujemy za cierpliwość!
+                    </p>
                 </div>
             </main>
         </div>

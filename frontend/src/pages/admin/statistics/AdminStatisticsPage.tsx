@@ -1,4 +1,3 @@
-// src/pages/admin/statistics/AdminStatisticsPage.tsx
 import React, { useState, useEffect, useMemo } from 'react';
 import AdminSidebarComponent from '../../../components/admin/AdminSidebarComponent';
 import { StatisticsService } from '../../../services/StatisticsService';
@@ -64,7 +63,6 @@ const AdminStatisticsPage: React.FC = () => {
     const [specializationStats, setSpecializationStats] = useState<SpecializationStat[]>([]);
     const [trainerWorkload, setTrainerWorkload] = useState<TrainerWorkload[]>([]);
     const [popularExercisesPlans, setPopularExercisesPlans] = useState<ExercisePopularity[]>([]);
-    const [popularExercisesLeaderboard, setPopularExercisesLeaderboard] = useState<ExercisePopularity[]>([]);
     const [systemActivity, setSystemActivity] = useState<SystemActivityCount[]>([]);
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -75,7 +73,6 @@ const AdminStatisticsPage: React.FC = () => {
             setIsLoading(true);
             setError(null);
             try {
-                // Sprawdź, czy StatisticsApiService jest poprawnie zaimportowane i istnieje
                 if (!StatisticsService) {
                     throw new Error("StatisticsApiService is not available. Check import.");
                 }
@@ -87,7 +84,6 @@ const AdminStatisticsPage: React.FC = () => {
                     specializationsData,
                     workloadData,
                     popExPlansData,
-                    popExLeadData,
                     sysActivityData
                 ] = await Promise.all([
                     StatisticsService.getTotalUserCount(),
@@ -96,7 +92,6 @@ const AdminStatisticsPage: React.FC = () => {
                     StatisticsService.getTrainerCountBySpecialization(),
                     StatisticsService.getTrainerWorkloadStats(),
                     StatisticsService.getMostPopularExercisesInPlans(5),
-                    StatisticsService.getMostPopularExercisesInLeaderboard(5),
                     StatisticsService.getOverallSystemActivityCounts(),
                 ]);
 
@@ -106,7 +101,6 @@ const AdminStatisticsPage: React.FC = () => {
                 setSpecializationStats(specializationsData);
                 setTrainerWorkload(workloadData);
                 setPopularExercisesPlans(popExPlansData);
-                setPopularExercisesLeaderboard(popExLeadData);
                 setSystemActivity(sysActivityData);
 
             } catch (err) {
@@ -274,37 +268,20 @@ const AdminStatisticsPage: React.FC = () => {
                     ): <p className="text-sm text-gray-500">Brak danych o obciążeniu trenerów.</p>}
                 </section>
 
-                <section className="mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200/80">
-                        <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
-                            <Dumbbell size={22} className={`mr-2 text-red-500`}/> Top 5 Ćwiczeń w Planach
-                        </h2>
-                        {popularExercisesPlans && popularExercisesPlans.length > 0 ? (
-                            <ul className="space-y-1">
-                                {popularExercisesPlans.map((ex: ExercisePopularity, idx: number) => (
-                                    <li key={idx} className="p-2 rounded-md hover:bg-red-50 text-sm">
-                                        <div className="font-medium text-gray-800">{ex.exerciseName}</div>
-                                        <div className="text-xs text-gray-500">Grupa: {ex.muscleGroup} | W planach: {ex.countValue}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : <p className="text-sm text-gray-500">Brak danych.</p>}
-                    </div>
-                    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200/80">
-                        <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
-                            <Dumbbell size={22} className={`mr-2 text-orange-500`}/> Top 5 Ćwiczeń w Leaderboardach
-                        </h2>
-                        {popularExercisesLeaderboard && popularExercisesLeaderboard.length > 0 ? (
-                            <ul className="space-y-1">
-                                {popularExercisesLeaderboard.map((ex: ExercisePopularity, idx: number) => (
-                                    <li key={idx} className="p-2 rounded-md hover:bg-orange-50 text-sm">
-                                        <div className="font-medium text-gray-800">{ex.exerciseName}</div>
-                                        <div className="text-xs text-gray-500">Grupa: {ex.muscleGroup} | Wpisów: {ex.countValue}</div>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : <p className="text-sm text-gray-500">Brak danych.</p>}
-                    </div>
+                <section className="mb-10 bg-white p-6 rounded-xl shadow-lg border border-gray-200/80">
+                    <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
+                        <Dumbbell size={22} className={`mr-2 text-red-500`}/> Top 5 Ćwiczeń w Planach
+                    </h2>
+                    {popularExercisesPlans && popularExercisesPlans.length > 0 ? (
+                        <ul className="space-y-1">
+                            {popularExercisesPlans.map((ex: ExercisePopularity, idx: number) => (
+                                <li key={idx} className="p-2 rounded-md hover:bg-red-50 text-sm">
+                                    <div className="font-medium text-gray-800">{ex.exerciseName}</div>
+                                    <div className="text-xs text-gray-500">Grupa: {ex.muscleGroup} | W planach: {ex.countValue}</div>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : <p className="text-sm text-gray-500">Brak danych.</p>}
                 </section>
             </main>
         </div>

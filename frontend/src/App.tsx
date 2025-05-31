@@ -7,8 +7,6 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./context/AuthContext";
 
 import TrainingsPage from './pages/TrainingsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import FavoritesPage from './pages/FavoritesPage';
 import SettingsPage from './pages/SettingsPage';
 
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -18,7 +16,8 @@ import UserManagementPage from "./pages/admin/user-management/UserManagementPage
 import TrainerManagementPage from "./pages/admin/trainer-management/TrainerManagementPage";
 import TrainingPlansPage from "./pages/admin/training-plans/TrainingPlansPage";
 import TrainerSessionsPage from "./pages/admin/trainer-sessions/TrainerSessionsPage";
-import AdminStatisticsPage from "./pages/admin/statistics/AdminStatisticsPage"; // NOWY IMPORT
+import AdminStatisticsPage from "./pages/admin/statistics/AdminStatisticsPage";
+import PersonalPlansPage from "./pages/admin/personal-plans/PersonalPlansPage.tsx";
 
 function App() {
     const { isAuthenticated, isLoading, user } = useAuth();
@@ -39,8 +38,6 @@ function App() {
             <Route element={<ProtectedRoute />}>
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/trainings" element={<TrainingsPage />} />
-                <Route path="/notifications" element={<NotificationsPage />} />
-                <Route path="/favorites" element={<FavoritesPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/" element={<Navigate to={user?.role === 'ADMIN' ? "/admin" : "/dashboard"} replace />} />
 
@@ -53,7 +50,8 @@ function App() {
                         <Route path="/admin/exercises" element={<ExercisesPage />} />
                         <Route path="/admin/training-plans" element={<TrainingPlansPage />} />
                         <Route path="/admin/trainer-sessions" element={<TrainerSessionsPage />} />
-                        <Route path="/admin/statistics" element={<AdminStatisticsPage />} /> {/* NOWA TRASA */}
+                        <Route path="/admin/statistics" element={<AdminStatisticsPage />} />
+                        <Route path="/admin/personal-plans" element={<PersonalPlansPage />} />
                     </>
                 )}
             </Route>

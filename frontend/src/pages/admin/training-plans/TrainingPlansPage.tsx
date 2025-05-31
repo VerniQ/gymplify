@@ -252,7 +252,7 @@ const TrainingPlansPage: React.FC = () => {
                     </div>
                     <button
                         onClick={() => handleOpenPlanModal('add')}
-                        className={`inline-flex items-center justify-center px-4 py-2.5 bg-${ACCENT_COLOR}-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-${ACCENT_COLOR}-700 focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:ring-offset-2 transition-colors`}
+                        className={`inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors`}
                     >
                         <PlusCircle size={18} className="mr-2"/>
                         Dodaj szablon planu
@@ -312,7 +312,7 @@ const TrainingPlansPage: React.FC = () => {
                                             <button
                                                 onClick={() => handleOpenPlanModal('edit', plan)}
                                                 title="Edytuj nazwę planu"
-                                                className={`p-1.5 text-gray-400 hover:text-${ACCENT_COLOR}-600 rounded-md hover:bg-${ACCENT_COLOR}-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100`}
+                                                className={`p-1.5 text-gray-400 hover:text-blue-600 rounded-md hover:bg-blue-100/70 transition-all opacity-0 group-hover:opacity-100 focus:opacity-100`}
                                             >
                                                 <Edit3 size={18}/>
                                             </button>
@@ -387,7 +387,7 @@ const TrainingPlansPage: React.FC = () => {
                                         Anuluj
                                     </button>
                                     <button type="submit" disabled={isLoading || !planFormData.name?.trim()}
-                                            className={`px-4 py-2 text-sm font-medium text-white bg-${ACCENT_COLOR}-600 rounded-lg shadow-sm hover:bg-${ACCENT_COLOR}-700 focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center min-w-[80px]`}>
+                                            className={`px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center min-w-[80px]`}>
                                         {isLoading ? <Loader2 className={`w-5 h-5 animate-spin`}/> : 'Zapisz'}
                                     </button>
                                 </div>
@@ -480,7 +480,7 @@ const TrainingPlansPage: React.FC = () => {
                                             value={exerciseToAdd}
                                             onChange={(e) => setExerciseToAdd(e.target.value)}
                                             disabled={isLoadingExercises || allAvailableExercises.length === 0}
-                                            className={`flex-grow px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:border-${ACCENT_COLOR}-500 disabled:bg-gray-100`}
+                                            className={`flex-grow px-3.5 py-2.5 text-sm bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100`}
                                         >
                                             <option value="">Wybierz ćwiczenie...</option>
                                             {allAvailableExercises.map(ex => (
@@ -492,7 +492,7 @@ const TrainingPlansPage: React.FC = () => {
                                         <button
                                             onClick={handleAddExerciseToSelectedPlan}
                                             disabled={isLoadingExercises || !exerciseToAdd}
-                                            className={`px-4 py-2.5 text-sm font-medium text-white bg-${ACCENT_COLOR}-600 rounded-lg shadow-sm hover:bg-${ACCENT_COLOR}-700 focus:outline-none focus:ring-2 focus:ring-${ACCENT_COLOR}-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center min-w-[100px]`}
+                                            className={`px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue}-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex items-center justify-center min-w-[100px]`}
                                         >
                                             {isLoadingExercises && exerciseToAdd ?
                                                 <Loader2 className="w-5 h-5 animate-spin"/> : 'Dodaj'}

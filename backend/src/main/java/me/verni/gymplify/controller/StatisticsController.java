@@ -1,6 +1,6 @@
 package me.verni.gymplify.controller;
 
-import me.verni.gymplify.dto.statistics.*;
+import me.verni.gymplify.dto.statistics.*; // Importuje wszystkie DTO z tego pakietu
 import me.verni.gymplify.service.StatisticsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +60,12 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticsService.getTrainerWorkloadStats());
     }
 
+    @GetMapping("/exercises/count-by-muscle-group")
+    public ResponseEntity<List<ExerciseCountByMuscleGroupDto>> getExerciseCountByMuscleGroup() {
+        logger.info("GET /api/statistics/exercises/count-by-muscle-group");
+        return ResponseEntity.ok(statisticsService.getExerciseCountByMuscleGroup());
+    }
+
     @GetMapping("/exercises/popular-in-plans")
     public ResponseEntity<List<ExercisePopularityDto>> getMostPopularExercisesInPlans(
             @RequestParam(defaultValue = "10") int topN) {
@@ -67,19 +73,11 @@ public class StatisticsController {
         return ResponseEntity.ok(statisticsService.getMostPopularExercisesInPlans(topN));
     }
 
-    @GetMapping("/exercises/popular-in-leaderboard")
-    public ResponseEntity<List<ExercisePopularityDto>> getMostPopularExercisesInLeaderboard(
-            @RequestParam(defaultValue = "10") int topN) {
-        logger.info("GET /api/statistics/exercises/popular-in-leaderboard?topN={}", topN);
-        return ResponseEntity.ok(statisticsService.getMostPopularExercisesInLeaderboard(topN));
-    }
-
-    @GetMapping("/leaderboard/rankings/exercise/{exerciseId}")
-    public ResponseEntity<List<LeaderboardRankingDto>> getLeaderboardRankingsForExercise(
-            @PathVariable Long exerciseId,
-            @RequestParam(defaultValue = "10") int topN) {
-        logger.info("GET /api/statistics/leaderboard/rankings/exercise/{}?topN={}", exerciseId, topN);
-        return ResponseEntity.ok(statisticsService.getLeaderboardRankingsForExercise(exerciseId, topN));
+    @GetMapping("/training-plans/most-assigned")
+    public ResponseEntity<List<PopularPlanDto>> getMostAssignedTrainingPlans(
+            @RequestParam(defaultValue = "5") int topN) {
+        logger.info("GET /api/statistics/training-plans/most-assigned?topN={}", topN);
+        return ResponseEntity.ok(statisticsService.getMostAssignedTrainingPlans(topN));
     }
 
     @GetMapping("/system/activity-counts")

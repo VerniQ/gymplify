@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SystemActivityCountDto {
-    private String metric;
-    private Integer countValue;
+public class ExerciseCountByMuscleGroupDto {
+    private String groupName;
+    private Integer exerciseCount;
 }

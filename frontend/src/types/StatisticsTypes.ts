@@ -1,5 +1,3 @@
-// src/types/StatisticsTypes.ts
-
 export interface RoleStat {
     roleName: string;
     userCount: number;
@@ -13,7 +11,7 @@ export interface SpecializationStat {
 export interface TrainerWorkload {
     trainerId: number;
     trainerFullName: string;
-    specialization?: string;
+    specialization?: string | null;
     assignedClientsCount: number;
     totalScheduledSessions: number;
     sessionsNext7Days: number;
@@ -26,29 +24,21 @@ export interface ExercisePopularity {
 }
 
 export interface NewUserStat {
-    creationDate: string; // YYYY-MM-DD
+    creationDate: string;
     newUsersCount: number;
 }
 
 export interface SystemActivityCount {
     metric: string;
-    count: number;
+    countValue: number;
 }
 
-export interface UserWeightChange {
-    userId: number;
-    initialWeight?: number;
-    finalWeight?: number;
-    averageChange?: number;
-    measurementCount: number;
-    success: boolean;
-    message?: string;
+export interface PopularPlanDto {
+    planName: string;
+    assignmentsCount: number;
 }
 
-export interface LeaderboardRanking {
-    username: string;
-    exerciseName: string;
-    weight: number;
-    measurementDate: string;
-    exerciseRank: number;
+export interface ExerciseCountByMuscleGroupDto {
+    groupName: string;
+    exerciseCount: number;
 }

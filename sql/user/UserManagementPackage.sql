@@ -155,8 +155,6 @@ CREATE OR REPLACE PACKAGE BODY PKG_USER_MGMT AS
         END;
 
         DELETE FROM PERSONAL_PLANS WHERE user_id = p_user_id;
-        DELETE FROM WEIGHT_MEASUREMENTS WHERE user_id = p_user_id;
-        DELETE FROM WEIGHT_LEADERBOARD WHERE user_id = p_user_id;
         DELETE FROM USERS WHERE user_id = p_user_id;
 
         IF SQL%ROWCOUNT = 0 THEN

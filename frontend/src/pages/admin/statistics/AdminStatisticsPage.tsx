@@ -7,6 +7,8 @@ import {
     TrainerWorkload,
     ExercisePopularity,
     SystemActivityCount,
+    PopularPlanDto,
+    ExerciseCountByMuscleGroupDto
 } from '../../../types/StatisticsTypes';
 import {
     BarChart as BarChartLucideIcon,
@@ -16,7 +18,8 @@ import {
     Dumbbell,
     ListChecks,
     AlertTriangle,
-    Loader2
+    Loader2,
+    ClipboardList
 } from 'lucide-react';
 import {
     ResponsiveContainer,
@@ -30,7 +33,6 @@ import {
     PieChart,
     Pie,
     Cell,
-    LabelList
 } from 'recharts';
 
 const ACCENT_COLOR = 'blue';
@@ -54,7 +56,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color = A
     </div>
 );
 
-const PIE_CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82Ca9D', '#FFC0CB', '#A0522D'];
+const PIE_CHART_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82Ca9D', '#FFC0CB', '#A0522D', '#FA8072', '#20B2AA'];
 
 const AdminStatisticsPage: React.FC = () => {
     const [totalUsers, setTotalUsers] = useState<number | null>(null);
@@ -64,6 +66,8 @@ const AdminStatisticsPage: React.FC = () => {
     const [trainerWorkload, setTrainerWorkload] = useState<TrainerWorkload[]>([]);
     const [popularExercisesPlans, setPopularExercisesPlans] = useState<ExercisePopularity[]>([]);
     const [systemActivity, setSystemActivity] = useState<SystemActivityCount[]>([]);
+    const [exerciseCountByMuscleGroup, setExerciseCountByMuscleGroup] = useState<ExerciseCountByMuscleGroupDto[]>([]);
+    const [mostAssignedPlans, setMostAssignedPlans] = useState<PopularPlanDto[]>([]);
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
@@ -84,7 +88,9 @@ const AdminStatisticsPage: React.FC = () => {
                     specializationsData,
                     workloadData,
                     popExPlansData,
-                    sysActivityData
+                    sysActivityData,
+                    exCountByGroupData,
+                    mostAssignedPlansData,
                 ] = await Promise.all([
                     StatisticsService.getTotalUserCount(),
                     StatisticsService.getTotalTrainerCount(),
@@ -93,6 +99,8 @@ const AdminStatisticsPage: React.FC = () => {
                     StatisticsService.getTrainerWorkloadStats(),
                     StatisticsService.getMostPopularExercisesInPlans(5),
                     StatisticsService.getOverallSystemActivityCounts(),
+                    StatisticsService.getExerciseCountByMuscleGroup(),
+                    StatisticsService.getMostAssignedTrainingPlans(5),
                 ]);
 
                 setTotalUsers(usersTotalData);
@@ -102,6 +110,8 @@ const AdminStatisticsPage: React.FC = () => {
                 setTrainerWorkload(workloadData);
                 setPopularExercisesPlans(popExPlansData);
                 setSystemActivity(sysActivityData);
+                setExerciseCountByMuscleGroup(exCountByGroupData);
+                setMostAssignedPlans(mostAssignedPlansData);
 
             } catch (err) {
                 const message = err instanceof Error ? err.message : 'Wystąpił nieznany błąd podczas ładowania statystyk.';
@@ -112,13 +122,13 @@ const AdminStatisticsPage: React.FC = () => {
             }
         };
 
-        fetchAllStatistics().catch(console.error);
+        void fetchAllStatistics();
     }, []);
 
     const systemActivityMap = useMemo(() => {
         const map = new Map<string, number>();
         if (systemActivity && Array.isArray(systemActivity)) {
-            systemActivity.forEach(item => map.set(item.metric, item.count));
+            systemActivity.forEach(item => map.set(item.metric, item.countValue));
         }
         return map;
     }, [systemActivity]);
@@ -129,6 +139,13 @@ const AdminStatisticsPage: React.FC = () => {
         }
         return [];
     }, [specializationStats]);
+
+    const exerciseCountByMuscleGroupPieData = useMemo(() => {
+        if (exerciseCountByMuscleGroup && Array.isArray(exerciseCountByMuscleGroup)) {
+            return exerciseCountByMuscleGroup.map(stat => ({ name: stat.groupName, value: stat.exerciseCount }));
+        }
+        return [];
+    }, [exerciseCountByMuscleGroup]);
 
 
     if (isLoading) {
@@ -175,10 +192,11 @@ const AdminStatisticsPage: React.FC = () => {
                 </header>
 
                 <section className="mb-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    <StatCard title="Wszyscy Użytkownicy" value={totalUsers ?? 'N/A'} icon={Users} />
-                    <StatCard title="Wszyscy Trenerzy" value={totalTrainers ?? 'N/A'} icon={UserCog} />
+                    <StatCard title="Wszyscy Użytkownicy" value={totalUsers ?? 'N/A'} icon={Users} color={ACCENT_COLOR} />
+                    <StatCard title="Wszyscy Trenerzy" value={totalTrainers ?? 'N/A'} icon={UserCog} color={ACCENT_COLOR} />
                     <StatCard title="Grupy Mięśniowe" value={systemActivityMap.get('Total Muscle Groups') ?? 'N/A'} icon={ListChecks} color="green" />
                     <StatCard title="Ćwiczenia" value={systemActivityMap.get('Total Exercises') ?? 'N/A'} icon={Dumbbell} color="purple" />
+                    <StatCard title="Plany Treningowe" value={systemActivityMap.get('Total Training Plans') ?? 'N/A'} icon={ClipboardList} color="yellow" />
                 </section>
 
                 <section className="mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -188,16 +206,16 @@ const AdminStatisticsPage: React.FC = () => {
                         </h2>
                         {roleStats && roleStats.length > 0 ? (
                             <ResponsiveContainer width="100%" height={300}>
-                                <BarChart data={roleStats} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>
+                                <BarChart data={roleStats} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
                                     <XAxis dataKey="roleName" tick={{ fontSize: 12, fill: '#6b7280' }} />
                                     <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#6b7280' }} />
                                     <Tooltip
-                                        cursor={{ fill: 'rgba(200,200,200,0.1)' }}
+                                        cursor={{ fill: 'rgba(100,100,200,0.1)' }}
                                         contentStyle={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
                                     />
                                     <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                                    <Bar dataKey="userCount" name="Liczba użytkowników" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={40}/>
+                                    <Bar dataKey="userCount" name="Liczba użytkowników" fill={`#${ACCENT_COLOR === 'blue' ? '3B82F6' : '10B981'}`} radius={[4, 4, 0, 0]} barSize={40}/>
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : <p className="text-sm text-gray-500 pt-4">Brak danych do wyświetlenia wykresu.</p>}
@@ -221,10 +239,9 @@ const AdminStatisticsPage: React.FC = () => {
                                         nameKey="name"
                                         label={({ name, percent }: { name: string, percent: number }) => `${name} (${(percent * 100).toFixed(0)}%)`}
                                     >
-                                        {specializationPieData.map((_entry: { name: string; value: number }, index: number) => (
+                                        {specializationPieData.map((_entry, index: number) => (
                                             <Cell key={`cell-spec-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
                                         ))}
-                                        <LabelList dataKey="value" position="outside" offset={15} formatter={(value: number) => value} className="text-xs fill-gray-600"/>
                                     </Pie>
                                     <Tooltip
                                         contentStyle={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
@@ -235,6 +252,56 @@ const AdminStatisticsPage: React.FC = () => {
                         ) : <p className="text-sm text-gray-500 pt-4">Brak danych do wyświetlenia wykresu.</p>}
                     </div>
                 </section>
+
+                <section className="mb-10 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-gray-200/80 min-h-[350px]">
+                        <h2 className="text-xl font-semibold text-slate-700 mb-1 flex items-center">
+                            <Dumbbell size={22} className={`mr-2 text-purple-500`}/> Ćwiczenia wg Grup Mięśniowych
+                        </h2>
+                        {exerciseCountByMuscleGroupPieData && exerciseCountByMuscleGroupPieData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                                <PieChart>
+                                    <Pie
+                                        data={exerciseCountByMuscleGroupPieData}
+                                        cx="50%"
+                                        cy="50%"
+                                        labelLine={false}
+                                        outerRadius={100}
+                                        fill="#8884d8"
+                                        dataKey="value"
+                                        nameKey="name"
+                                        label={({ name, percent }: { name: string, percent: number }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                                    >
+                                        {exerciseCountByMuscleGroupPieData.map((_entry, index: number) => (
+                                            <Cell key={`cell-ex-group-${index}`} fill={PIE_CHART_COLORS[(index + 2) % PIE_CHART_COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip
+                                        contentStyle={{ backgroundColor: 'white', borderRadius: '0.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+                                    />
+                                    <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '12px' }}/>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : <p className="text-sm text-gray-500 pt-4">Brak danych do wyświetlenia wykresu.</p>}
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200/80">
+                        <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
+                            <ClipboardList size={22} className={`mr-2 text-yellow-500`}/> Top 5 Najczęściej Przypisywanych Planów
+                        </h2>
+                        {mostAssignedPlans && mostAssignedPlans.length > 0 ? (
+                            <ul className="space-y-1">
+                                {mostAssignedPlans.map((plan: PopularPlanDto, idx: number) => (
+                                    <li key={idx} className="p-2 rounded-md hover:bg-yellow-50 text-sm flex justify-between">
+                                        <span className="font-medium text-gray-800">{plan.planName}</span>
+                                        <span className="text-xs text-gray-600 bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">{plan.assignmentsCount} przypisań</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        ) : <p className="text-sm text-gray-500">Brak danych.</p>}
+                    </div>
+                </section>
+
 
                 <section className="mb-10 bg-white p-6 rounded-xl shadow-lg border border-gray-200/80">
                     <h2 className="text-xl font-semibold text-slate-700 mb-4 flex items-center">
@@ -275,14 +342,18 @@ const AdminStatisticsPage: React.FC = () => {
                     {popularExercisesPlans && popularExercisesPlans.length > 0 ? (
                         <ul className="space-y-1">
                             {popularExercisesPlans.map((ex: ExercisePopularity, idx: number) => (
-                                <li key={idx} className="p-2 rounded-md hover:bg-red-50 text-sm">
-                                    <div className="font-medium text-gray-800">{ex.exerciseName}</div>
-                                    <div className="text-xs text-gray-500">Grupa: {ex.muscleGroup} | W planach: {ex.countValue}</div>
+                                <li key={idx} className="p-2 rounded-md hover:bg-red-50 text-sm flex justify-between">
+                                    <div>
+                                        <span className="font-medium text-gray-800">{ex.exerciseName}</span>
+                                        <span className="text-xs text-gray-500 ml-2">({ex.muscleGroup})</span>
+                                    </div>
+                                    <span className="text-xs text-gray-600 bg-red-100 text-red-700 px-2 py-0.5 rounded-full">{ex.countValue} razy w planach</span>
                                 </li>
                             ))}
                         </ul>
                     ) : <p className="text-sm text-gray-500">Brak danych.</p>}
                 </section>
+
             </main>
         </div>
     );

@@ -57,15 +57,12 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
 
         v_generated_id := muscle_groups_seq.NEXTVAL;
 
-        INSERT INTO MUSCLE_GROUPS (
-            group_id,
-            group_name,
-            description
-        ) VALUES (
-            v_generated_id,
-            TRIM(p_group_name),
-            p_description
-        );
+        INSERT INTO MUSCLE_GROUPS (group_id,
+                                   group_name,
+                                   description)
+        VALUES (v_generated_id,
+                TRIM(p_group_name),
+                p_description);
 
         COMMIT;
         p_new_group_id := v_generated_id;
@@ -77,7 +74,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
             ROLLBACK;
             p_success := FALSE;
             p_new_group_id := NULL;
-            DBMS_OUTPUT.PUT_LINE('Błąd PL/SQL: Grupa mięśniowa o nazwie "' || TRIM(p_group_name) || '" już istnieje. (ORA-00001)');
+            DBMS_OUTPUT.PUT_LINE('Błąd PL/SQL: Grupa mięśniowa o nazwie "' || TRIM(p_group_name) ||
+                                 '" już istnieje. (ORA-00001)');
         WHEN OTHERS THEN
             ROLLBACK;
             p_success := FALSE;
@@ -90,7 +88,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
         p_group_id IN MUSCLE_GROUPS.GROUP_ID%TYPE,
         p_success OUT BOOLEAN
     ) AS
-        v_count NUMBER;
+        v_count           NUMBER;
         v_exercises_count NUMBER;
     BEGIN
         p_success := FALSE;
@@ -116,17 +114,20 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
         WHERE group_id = p_group_id;
 
         IF v_exercises_count > 0 THEN
-            DBMS_OUTPUT.PUT_LINE('Nie można usunąć grupy mięśniowej. Istnieją powiązane ćwiczenia (' || v_exercises_count || ').');
+            DBMS_OUTPUT.PUT_LINE('Nie można usunąć grupy mięśniowej. Istnieją powiązane ćwiczenia (' ||
+                                 v_exercises_count || ').');
             RETURN;
         END IF;
 
-        DELETE FROM MUSCLE_GROUPS
+        DELETE
+        FROM MUSCLE_GROUPS
         WHERE group_id = p_group_id;
 
         IF SQL%ROWCOUNT = 0 THEN
-             DBMS_OUTPUT.PUT_LINE('Nie udało się usunąć grupy mięśniowej ID: ' || p_group_id || ' (mogła zostać usunięta w międzyczasie).');
-             ROLLBACK;
-             RETURN;
+            DBMS_OUTPUT.PUT_LINE('Nie udało się usunąć grupy mięśniowej ID: ' || p_group_id ||
+                                 ' (mogła zostać usunięta w międzyczasie).');
+            ROLLBACK;
+            RETURN;
         END IF;
 
         COMMIT;
@@ -162,8 +163,11 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
                 CLOSE p_muscle_groups;
             END IF;
             BEGIN
-                OPEN p_muscle_groups FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description FROM DUAL WHERE 1=0;
-            EXCEPTION WHEN OTHERS THEN NULL;
+                OPEN p_muscle_groups FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description
+                                         FROM DUAL
+                                         WHERE 1 = 0;
+            EXCEPTION
+                WHEN OTHERS THEN NULL;
             END;
             DBMS_OUTPUT.PUT_LINE('Błąd podczas pobierania listy grup mięśniowych: ' || SQLERRM);
     END GetAllMuscleGroups;
@@ -179,7 +183,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
 
         IF p_group_id IS NULL THEN
             DBMS_OUTPUT.PUT_LINE('ID grupy mięśniowej (p_group_id) nie może być puste.');
-            OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description FROM DUAL WHERE 1=0;
+            OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description
+                                    FROM DUAL
+                                    WHERE 1 = 0;
             RETURN;
         END IF;
 
@@ -190,7 +196,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
 
         IF v_count = 0 THEN
             DBMS_OUTPUT.PUT_LINE('Grupa mięśniowa z ID ' || p_group_id || ' nie istnieje.');
-            OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description FROM DUAL WHERE 1=0;
+            OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description
+                                    FROM DUAL
+                                    WHERE 1 = 0;
             RETURN;
         END IF;
 
@@ -209,8 +217,11 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
                 CLOSE p_muscle_group;
             END IF;
             BEGIN
-                OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description FROM DUAL WHERE 1=0;
-            EXCEPTION WHEN OTHERS THEN NULL;
+                OPEN p_muscle_group FOR SELECT NULL AS group_id, NULL AS group_name, NULL AS description
+                                        FROM DUAL
+                                        WHERE 1 = 0;
+            EXCEPTION
+                WHEN OTHERS THEN NULL;
             END;
             DBMS_OUTPUT.PUT_LINE('Błąd podczas pobierania grupy mięśniowej ID ' || p_group_id || ': ' || SQLERRM);
     END GetMuscleGroupById;
@@ -221,7 +232,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
         p_description IN MUSCLE_GROUPS.DESCRIPTION%TYPE DEFAULT NULL,
         p_success OUT BOOLEAN
     ) AS
-        v_count NUMBER;
+        v_count        NUMBER;
         v_name_trimmed MUSCLE_GROUPS.GROUP_NAME%TYPE;
     BEGIN
         p_success := FALSE;
@@ -253,14 +264,15 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
         END IF;
 
         UPDATE MUSCLE_GROUPS
-        SET group_name = v_name_trimmed,
+        SET group_name  = v_name_trimmed,
             description = p_description
         WHERE group_id = p_group_id;
 
         IF SQL%ROWCOUNT = 0 THEN
-             DBMS_OUTPUT.PUT_LINE('Nie udało się zaktualizować grupy mięśniowej ID: ' || p_group_id || ' (mogła zostać usunięta w międzyczasie).');
-             ROLLBACK;
-             RETURN;
+            DBMS_OUTPUT.PUT_LINE('Nie udało się zaktualizować grupy mięśniowej ID: ' || p_group_id ||
+                                 ' (mogła zostać usunięta w międzyczasie).');
+            ROLLBACK;
+            RETURN;
         END IF;
 
         COMMIT;
@@ -271,7 +283,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_MUSCLE_GROUP_MGMT AS
         WHEN DUP_VAL_ON_INDEX THEN
             ROLLBACK;
             p_success := FALSE;
-            DBMS_OUTPUT.PUT_LINE('Błąd PL/SQL: Grupa mięśniowa o nazwie "' || v_name_trimmed || '" już istnieje. (ORA-00001)');
+            DBMS_OUTPUT.PUT_LINE('Błąd PL/SQL: Grupa mięśniowa o nazwie "' || v_name_trimmed ||
+                                 '" już istnieje. (ORA-00001)');
         WHEN OTHERS THEN
             ROLLBACK;
             p_success := FALSE;

@@ -36,9 +36,9 @@ public class StatisticsRepository {
     private final SimpleJdbcCall getTrainerCountBySpecializationTypedCall;
     private final SimpleJdbcCall getTrainerWorkloadStatsTypedCall;
     private final SimpleJdbcCall getMostPopularExercisesInPlansTypedCall;
-    private final SimpleJdbcCall getMostPopularExercisesInLeaderboardTypedCall;
-    private final SimpleJdbcCall getLeaderboardRankingsForExerciseCall;
     private final SimpleJdbcCall getOverallSystemActivityCountsCall;
+    private final SimpleJdbcCall getExerciseCountByMuscleGroupCall;
+    private final SimpleJdbcCall getMostAssignedTrainingPlansCall;
 
 
     private static class RoleStatDtoRowMapper implements RowMapper<RoleStatDto> {
@@ -90,24 +90,24 @@ public class StatisticsRepository {
     private static class SystemActivityCountDtoRowMapper implements RowMapper<SystemActivityCountDto> {
         @Override
         public SystemActivityCountDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return new SystemActivityCountDto(rs.getString("METRIC"), rs.getInt("COUNT"));
+            return new SystemActivityCountDto(rs.getString("METRIC"), rs.getInt("COUNT_VALUE"));
         }
     }
 
-    private static class LeaderboardRankingDtoRowMapper implements RowMapper<LeaderboardRankingDto> {
+    private static class PopularPlanDtoRowMapper implements RowMapper<PopularPlanDto> {
         @Override
-        public LeaderboardRankingDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-            java.sql.Date sqlDate = rs.getDate("MEASUREMENT_DATE");
-            LocalDate measurementDate = (sqlDate != null) ? sqlDate.toLocalDate() : null;
-            return new LeaderboardRankingDto(
-                    rs.getString("USERNAME"),
-                    rs.getString("EXERCISE_NAME"),
-                    rs.getBigDecimal("WEIGHT"),
-                    measurementDate,
-                    rs.getInt("EXERCISE_RANK")
-            );
+        public PopularPlanDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new PopularPlanDto(rs.getString("PLAN_NAME"), rs.getInt("ASSIGNMENTS_COUNT"));
         }
     }
+
+    private static class ExerciseCountByMuscleGroupDtoRowMapper implements RowMapper<ExerciseCountByMuscleGroupDto> {
+        @Override
+        public ExerciseCountByMuscleGroupDto mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return new ExerciseCountByMuscleGroupDto(rs.getString("GROUP_NAME"), rs.getInt("EXERCISE_COUNT"));
+        }
+    }
+
 
     @Autowired
     public StatisticsRepository(JdbcTemplate jdbcTemplate) {
@@ -149,6 +149,15 @@ public class StatisticsRepository {
                 .declareParameters(
                         new SqlOutParameter("return", OracleTypes.CURSOR, new TrainerWorkloadDtoRowMapper())
                 );
+
+        this.getExerciseCountByMuscleGroupCall = new SimpleJdbcCall(jdbcTemplate)
+                .withCatalogName("PKG_APP_STATISTICS")
+                .withProcedureName("GetExerciseCountByMuscleGroup")
+                .declareParameters(
+                        new SqlOutParameter("p_exercise_muscle_group_stats", OracleTypes.CURSOR, new ExerciseCountByMuscleGroupDtoRowMapper()),
+                        new SqlOutParameter("p_success", Types.NUMERIC)
+                );
+
         this.getMostPopularExercisesInPlansTypedCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("PKG_APP_STATISTICS")
                 .withFunctionName("GetMostPopularExercisesInPlans_Typed")
@@ -156,21 +165,13 @@ public class StatisticsRepository {
                         new SqlParameter("p_top_n", Types.NUMERIC),
                         new SqlOutParameter("return", OracleTypes.CURSOR, new ExercisePopularityDtoRowMapper())
                 );
-        this.getMostPopularExercisesInLeaderboardTypedCall = new SimpleJdbcCall(jdbcTemplate)
-                .withCatalogName("PKG_APP_STATISTICS")
-                .withFunctionName("GetMostPopularExercisesInLeaderboard_Typed")
-                .declareParameters(
-                        new SqlParameter("p_top_n", Types.NUMERIC),
-                        new SqlOutParameter("return", OracleTypes.CURSOR, new ExercisePopularityDtoRowMapper())
-                );
 
-        this.getLeaderboardRankingsForExerciseCall = new SimpleJdbcCall(jdbcTemplate)
+        this.getMostAssignedTrainingPlansCall = new SimpleJdbcCall(jdbcTemplate)
                 .withCatalogName("PKG_APP_STATISTICS")
-                .withProcedureName("GetLeaderboardRankingsForExercise")
+                .withProcedureName("GetMostAssignedTrainingPlans")
                 .declareParameters(
-                        new SqlParameter("p_exercise_id", Types.NUMERIC),
                         new SqlParameter("p_top_n", Types.NUMERIC),
-                        new SqlOutParameter("p_rankings", OracleTypes.CURSOR, new LeaderboardRankingDtoRowMapper()),
+                        new SqlOutParameter("p_popular_plans", OracleTypes.CURSOR, new PopularPlanDtoRowMapper()),
                         new SqlOutParameter("p_success", Types.NUMERIC)
                 );
 
@@ -188,7 +189,7 @@ public class StatisticsRepository {
         if (successObj instanceof Number && ((Number) successObj).intValue() == 1) {
             return true;
         }
-        log.warn("Procedura {} nie powiodła się lub nie zwróciła flagi sukcesu (p_success={}).", procedureName, successObj);
+        log.warn("Procedure {} did not succeed or did not return a success flag (p_success={}).", procedureName, successObj);
         return false;
     }
 
@@ -197,8 +198,8 @@ public class StatisticsRepository {
             Number count = getTotalUserCountCall.executeFunction(Number.class);
             return Optional.ofNullable(count).map(Number::longValue);
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania całkowitej liczby użytkowników", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu całkowitej liczby użytkowników", e);
+            log.error("Error fetching total user count", e);
+            throw new OperationFailedException("Data error fetching total user count", e);
         }
     }
 
@@ -209,8 +210,8 @@ public class StatisticsRepository {
             List<RoleStatDto> stats = (List<RoleStatDto>) result.get("return");
             return stats != null ? stats : Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania liczby użytkowników po roli", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu liczby użytkowników po roli: " + e.getMessage(), e);
+            log.error("Error fetching user count by role", e);
+            throw new OperationFailedException("Data error fetching user count by role: " + e.getMessage(), e);
         }
     }
 
@@ -225,8 +226,8 @@ public class StatisticsRepository {
             }
             return Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania nowych użytkowników w okresie: {} - {}", startDate, endDate, e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu nowych użytkowników", e);
+            log.error("Error fetching new users in period: {} - {}", startDate, endDate, e);
+            throw new OperationFailedException("Data error fetching new users", e);
         }
     }
 
@@ -235,8 +236,8 @@ public class StatisticsRepository {
             Number count = getTotalTrainerCountCall.executeFunction(Number.class);
             return Optional.ofNullable(count).map(Number::longValue);
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania całkowitej liczby trenerów", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu całkowitej liczby trenerów", e);
+            log.error("Error fetching total trainer count", e);
+            throw new OperationFailedException("Data error fetching total trainer count", e);
         }
     }
 
@@ -247,8 +248,8 @@ public class StatisticsRepository {
             List<SpecializationStatDto> stats = (List<SpecializationStatDto>) result.get("return");
             return stats != null ? stats : Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania liczby trenerów po specjalizacji", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu liczby trenerów po specjalizacji: " + e.getMessage(), e);
+            log.error("Error fetching trainer count by specialization", e);
+            throw new OperationFailedException("Data error fetching trainer count by specialization: " + e.getMessage(), e);
         }
     }
 
@@ -259,8 +260,23 @@ public class StatisticsRepository {
             List<TrainerWorkloadDto> stats = (List<TrainerWorkloadDto>) result.get("return");
             return stats != null ? stats : Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania statystyk obciążenia trenerów", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu statystyk obciążenia trenerów: " + e.getMessage(), e);
+            log.error("Error fetching trainer workload statistics", e);
+            throw new OperationFailedException("Data error fetching trainer workload statistics: " + e.getMessage(), e);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<ExerciseCountByMuscleGroupDto> getExerciseCountByMuscleGroup() {
+        try {
+            Map<String, Object> result = getExerciseCountByMuscleGroupCall.execute();
+            if (checkSuccessFlag(result, "GetExerciseCountByMuscleGroup")) {
+                List<ExerciseCountByMuscleGroupDto> data = (List<ExerciseCountByMuscleGroupDto>) result.get("p_exercise_muscle_group_stats");
+                return data != null ? data : Collections.emptyList();
+            }
+            return Collections.emptyList();
+        } catch (DataAccessException e) {
+            log.error("Error fetching exercise count by muscle group", e);
+            throw new OperationFailedException("Data error fetching exercise count by muscle group", e);
         }
     }
 
@@ -271,36 +287,24 @@ public class StatisticsRepository {
             List<ExercisePopularityDto> stats = (List<ExercisePopularityDto>) result.get("return");
             return stats != null ? stats : Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania popularnych ćwiczeń w planach (top {})", topN, e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu popularnych ćwiczeń w planach: " + e.getMessage(), e);
+            log.error("Error fetching popular exercises in plans (top {})", topN, e);
+            throw new OperationFailedException("Data error fetching popular exercises in plans: " + e.getMessage(), e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public List<ExercisePopularityDto> getMostPopularExercisesInLeaderboardTyped(int topN) {
+    public List<PopularPlanDto> getMostAssignedTrainingPlans(int topN) {
         try {
-            Map<String, Object> result = getMostPopularExercisesInLeaderboardTypedCall.execute(Map.of("p_top_n", topN));
-            List<ExercisePopularityDto> stats = (List<ExercisePopularityDto>) result.get("return");
-            return stats != null ? stats : Collections.emptyList();
-        } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania popularnych ćwiczeń w leaderboard (top {})", topN, e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu popularnych ćwiczeń w leaderboard: " + e.getMessage(), e);
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<LeaderboardRankingDto> getLeaderboardRankingsForExercise(Long exerciseId, int topN) {
-        try {
-            Map<String, Object> params = Map.of("p_exercise_id", exerciseId, "p_top_n", topN);
-            Map<String, Object> result = getLeaderboardRankingsForExerciseCall.execute(params);
-            if (checkSuccessFlag(result, "GetLeaderboardRankingsForExercise")) {
-                List<LeaderboardRankingDto> data = (List<LeaderboardRankingDto>) result.get("p_rankings");
+            Map<String, Object> params = Map.of("p_top_n", topN);
+            Map<String, Object> result = getMostAssignedTrainingPlansCall.execute(params);
+            if (checkSuccessFlag(result, "GetMostAssignedTrainingPlans")) {
+                List<PopularPlanDto> data = (List<PopularPlanDto>) result.get("p_popular_plans");
                 return data != null ? data : Collections.emptyList();
             }
             return Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania rankingów leaderboard dla ćwiczenia ID: {}", exerciseId, e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu rankingów leaderboard", e);
+            log.error("Error fetching most assigned training plans (top {})", topN, e);
+            throw new OperationFailedException("Data error fetching most assigned training plans", e);
         }
     }
 
@@ -312,10 +316,11 @@ public class StatisticsRepository {
                 List<SystemActivityCountDto> data = (List<SystemActivityCountDto>) result.get("p_activity_counts");
                 return data != null ? data : Collections.emptyList();
             }
+            log.warn("Procedure GetOverallSystemActivityCounts failed, returning empty list.");
             return Collections.emptyList();
         } catch (DataAccessException e) {
-            log.error("Błąd podczas pobierania ogólnych statystyk aktywności systemu", e);
-            throw new OperationFailedException("Błąd danych przy pobieraniu ogólnych statystyk aktywności systemu: " + e.getMessage(), e);
+            log.error("Error fetching overall system activity counts", e);
+            throw new OperationFailedException("Data error fetching overall system activity counts: " + e.getMessage(), e);
         }
     }
 }

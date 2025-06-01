@@ -74,8 +74,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         p_check_user_role BOOLEAN DEFAULT FALSE,
         p_enforce_single_trainer BOOLEAN DEFAULT FALSE
     ) RETURN BOOLEAN IS
-        v_count NUMBER;
-        v_user_role users.role%TYPE;
+        v_count               NUMBER;
+        v_user_role           users.role%TYPE;
         v_existing_trainer_id personal_plans.trainer_id%TYPE;
     BEGIN
         IF p_user_id IS NOT NULL THEN
@@ -90,7 +90,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
 
             IF p_check_user_role THEN
                 IF v_user_role != 'USER' THEN
-                    RAISE_APPLICATION_ERROR(-20007, 'Użytkownik o ID ' || p_user_id || ' ma nieprawidłową rolę (' || v_user_role || ') i nie może mieć przypisanego planu osobistego.');
+                    RAISE_APPLICATION_ERROR(-20007, 'Użytkownik o ID ' || p_user_id || ' ma nieprawidłową rolę (' ||
+                                                    v_user_role || ') i nie może mieć przypisanego planu osobistego.');
                 END IF;
             END IF;
         END IF;
@@ -119,7 +120,8 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
 
             IF v_count > 0 THEN
                 RAISE_APPLICATION_ERROR(-20010, 'Użytkownik ID ' || p_user_id ||
-                                                ' ma już przypisany plan od innego trenera (ID ' || v_existing_trainer_id ||
+                                                ' ma już przypisany plan od innego trenera (ID ' ||
+                                                v_existing_trainer_id ||
                                                 '). Nie można przypisać planu od trenera ID ' || p_trainer_id || '.');
             END IF;
         END IF;
@@ -135,9 +137,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         v_is_valid BOOLEAN;
     BEGIN
         v_is_valid := fn_validate_entities(
-                p_user_id    => p_user_id,
+                p_user_id => p_user_id,
                 p_trainer_id => p_trainer_id,
-                p_plan_id    => p_plan_id,
+                p_plan_id => p_plan_id,
                 p_check_user_role => TRUE,
                 p_enforce_single_trainer => TRUE
                       );
@@ -177,7 +179,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         p_trainer_id IN personal_plans.trainer_id%TYPE DEFAULT NULL
     ) AS
         v_rows_deleted NUMBER;
-        v_is_valid BOOLEAN;
+        v_is_valid     BOOLEAN;
     BEGIN
         v_is_valid := fn_validate_entities(p_user_id, p_trainer_id, p_plan_id, FALSE, FALSE);
 
@@ -222,9 +224,9 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         END;
 
         v_is_valid := fn_validate_entities(
-                p_user_id    => v_user_id_original,
+                p_user_id => v_user_id_original,
                 p_trainer_id => p_new_trainer_id,
-                p_plan_id    => p_new_plan_id,
+                p_plan_id => p_new_plan_id,
                 p_check_user_role => FALSE,
                 p_enforce_single_trainer => TRUE
                       );
@@ -274,7 +276,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         p_user_id IN personal_plans.user_id%TYPE
     ) RETURN ty_personal_plan_table AS
         v_plans_tbl ty_personal_plan_table;
-        v_is_valid BOOLEAN;
+        v_is_valid  BOOLEAN;
     BEGIN
         v_is_valid := fn_validate_entities(p_user_id, NULL, NULL, FALSE, FALSE);
 
@@ -304,7 +306,7 @@ CREATE OR REPLACE PACKAGE BODY PKG_PERSONAL_PLAN_MGMT AS
         p_plan_id IN personal_plans.plan_id%TYPE
     ) RETURN ty_user_in_personal_plan_table AS
         v_users_tbl ty_user_in_personal_plan_table;
-        v_is_valid BOOLEAN;
+        v_is_valid  BOOLEAN;
     BEGIN
         v_is_valid := fn_validate_entities(NULL, NULL, p_plan_id, FALSE, FALSE);
 

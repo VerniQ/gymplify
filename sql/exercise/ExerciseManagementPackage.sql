@@ -120,10 +120,6 @@ CREATE OR REPLACE PACKAGE BODY PKG_EXERCISE_MGMT AS
         WHERE exercise_id = p_exercise_id;
         DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT || ' wierszy usuniętych z training_exercise dla exercise_id: ' || p_exercise_id);
 
-        DELETE FROM weight_leaderboard
-        WHERE exercise_id = p_exercise_id;
-        DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT || ' wierszy usuniętych z weight_leaderboard dla exercise_id: ' || p_exercise_id);
-
         DELETE FROM exercises
         WHERE exercise_id = p_exercise_id;
         DBMS_OUTPUT.PUT_LINE(SQL%ROWCOUNT || ' wierszy usuniętych z exercises dla exercise_id: ' || p_exercise_id);

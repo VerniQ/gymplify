@@ -1,10 +1,11 @@
 CREATE OR REPLACE TRIGGER trg_personal_plans_validate
-BEFORE INSERT OR UPDATE ON personal_plans
-FOR EACH ROW
+    BEFORE INSERT OR UPDATE
+    ON personal_plans
+    FOR EACH ROW
 DECLARE
-    v_user_count NUMBER;
+    v_user_count    NUMBER;
     v_trainer_count NUMBER;
-    v_plan_count NUMBER;
+    v_plan_count    NUMBER;
 BEGIN
     SELECT COUNT(*) INTO v_user_count FROM USERS WHERE user_id = :NEW.user_id;
     IF v_user_count = 0 THEN

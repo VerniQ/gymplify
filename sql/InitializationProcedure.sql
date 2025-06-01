@@ -9,7 +9,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
     BEGIN
         DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Rozpoczęto dla tabeli: ' || p_table_name);
         BEGIN
-            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Sprawdzanie istnienia tabeli ' || UPPER(p_table_name) || ' w USER_TABLES...');
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Sprawdzanie istnienia tabeli ' || UPPER(p_table_name) ||
+                                 ' w USER_TABLES...');
             SELECT COUNT(*)
             INTO temp
             FROM USER_TABLES
@@ -17,7 +18,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
             DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Liczba dla ' || UPPER(p_table_name) || ' w USER_TABLES to: ' || temp);
         EXCEPTION
             WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas zapytania do USER_TABLES dla ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas zapytania do USER_TABLES dla ' || p_table_name ||
+                                     ': ' || SQLCODE || ' - ' || SQLERRM);
                 RETURN FALSE;
         END;
 
@@ -30,7 +32,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
                 RETURN TRUE;
             EXCEPTION
                 WHEN OTHERS THEN
-                    DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas EXECUTE IMMEDIATE dla tabeli ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                    DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Błąd podczas EXECUTE IMMEDIATE dla tabeli ' || p_table_name ||
+                                         ': ' || SQLCODE || ' - ' || SQLERRM);
                     RETURN FALSE;
             END;
         ELSE
@@ -39,7 +42,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
         END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Nieoczekiwany błąd w fn_add_table dla ' || p_table_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_TABLE: Nieoczekiwany błąd w fn_add_table dla ' || p_table_name || ': ' ||
+                                 SQLCODE || ' - ' || SQLERRM);
             RETURN FALSE;
     END fn_add_table;
 
@@ -55,10 +59,12 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
             INTO temp
             FROM USER_SEQUENCES
             WHERE SEQUENCE_NAME = UPPER(p_sequence_name);
-            DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Liczba dla ' || UPPER(p_sequence_name) || ' w USER_SEQUENCES to: ' || temp);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Liczba dla ' || UPPER(p_sequence_name) || ' w USER_SEQUENCES to: ' ||
+                                 temp);
         EXCEPTION
             WHEN OTHERS THEN
-                DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Błąd podczas zapytania do USER_SEQUENCES dla ' || p_sequence_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Błąd podczas zapytania do USER_SEQUENCES dla ' ||
+                                     p_sequence_name || ': ' || SQLCODE || ' - ' || SQLERRM);
                 RETURN FALSE;
         END;
 
@@ -70,7 +76,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
                 RETURN TRUE;
             EXCEPTION
                 WHEN OTHERS THEN
-                    DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Błąd podczas EXECUTE IMMEDIATE dla sekwencji ' || p_sequence_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+                    DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Błąd podczas EXECUTE IMMEDIATE dla sekwencji ' ||
+                                         p_sequence_name || ': ' || SQLCODE || ' - ' || SQLERRM);
                     RETURN FALSE;
             END;
         ELSE
@@ -79,7 +86,8 @@ CREATE OR REPLACE PROCEDURE prc_initialize_database AS
         END IF;
     EXCEPTION
         WHEN OTHERS THEN
-            DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Nieoczekiwany błąd w fn_add_sequence dla ' || p_sequence_name || ': ' || SQLCODE || ' - ' || SQLERRM);
+            DBMS_OUTPUT.PUT_LINE('FN_ADD_SEQUENCE: Nieoczekiwany błąd w fn_add_sequence dla ' || p_sequence_name ||
+                                 ': ' || SQLCODE || ' - ' || SQLERRM);
             RETURN FALSE;
     END fn_add_sequence;
 
@@ -95,7 +103,8 @@ BEGIN
                 role VARCHAR2(50),
                 created_at TIMESTAMP
             )', 'USERS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik USERS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik USERS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINERS (
@@ -107,7 +116,8 @@ BEGIN
                 contact VARCHAR2(255),
                 CONSTRAINT fk_trainer_user FOREIGN KEY (user_id) REFERENCES USERS(user_id)
             )', 'TRAINERS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINERS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINERS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE MUSCLE_GROUPS (
@@ -115,7 +125,8 @@ BEGIN
                 group_name VARCHAR2(100) NOT NULL UNIQUE,
                 description CLOB
             )', 'MUSCLE_GROUPS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik MUSCLE_GROUPS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik MUSCLE_GROUPS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE EXERCISES (
@@ -125,14 +136,16 @@ BEGIN
                 group_id NUMBER,
                 CONSTRAINT fk_exercise_muscle_group FOREIGN KEY (group_id) REFERENCES MUSCLE_GROUPS(group_id)
             )', 'EXERCISES');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik EXERCISES: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik EXERCISES: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINING_PLANS (
                 plan_id NUMBER PRIMARY KEY,
                 name VARCHAR2(50)
             )', 'TRAINING_PLANS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_PLANS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_PLANS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE PERSONAL_PLANS (
@@ -144,7 +157,8 @@ BEGIN
                 CONSTRAINT fk_personal_plan_user FOREIGN KEY (user_id) REFERENCES USERS(user_id),
                 CONSTRAINT fk_personal_plan_plan FOREIGN KEY (plan_id) REFERENCES TRAINING_PLANS(plan_id)
             )', 'PERSONAL_PLANS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik PERSONAL_PLANS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik PERSONAL_PLANS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINING_EXERCISE (
@@ -154,7 +168,8 @@ BEGIN
                 CONSTRAINT fk_training_exercise_plan FOREIGN KEY (plan_id) REFERENCES TRAINING_PLANS(plan_id),
                 CONSTRAINT fk_training_exercise_exercise FOREIGN KEY (exercise_id) REFERENCES EXERCISES(exercise_id)
             )', 'TRAINING_EXERCISE');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_EXERCISE: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_EXERCISE: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_table(
             'CREATE TABLE TRAINER_SESSIONS (
@@ -165,29 +180,8 @@ BEGIN
                 end_time TIMESTAMP,
                 CONSTRAINT fk_session_trainer FOREIGN KEY (trainer_id) REFERENCES TRAINERS(trainer_id)
             )', 'TRAINER_SESSIONS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINER_SESSIONS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
-
-    v_success := fn_add_table(
-            'CREATE TABLE WEIGHT_MEASUREMENTS (
-                measurement_id NUMBER PRIMARY KEY,
-                user_id NUMBER,
-                measurement_date DATE,
-                weight DECIMAL(5,2),
-                CONSTRAINT fk_weight_user FOREIGN KEY (user_id) REFERENCES USERS(user_id)
-            )', 'WEIGHT_MEASUREMENTS');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik WEIGHT_MEASUREMENTS: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
-
-    v_success := fn_add_table(
-            'CREATE TABLE WEIGHT_LEADERBOARD (
-                result_id NUMBER PRIMARY KEY,
-                user_id NUMBER,
-                exercise_id NUMBER,
-                measurement_date DATE,
-                weight DECIMAL(5,2),
-                CONSTRAINT fk_leaderboard_user FOREIGN KEY (user_id) REFERENCES USERS(user_id),
-                CONSTRAINT fk_leaderboard_exercise FOREIGN KEY (exercise_id) REFERENCES EXERCISES(exercise_id)
-            )', 'WEIGHT_LEADERBOARD');
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik WEIGHT_LEADERBOARD: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINER_SESSIONS: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     DBMS_OUTPUT.PUT_LINE('---');
     DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Rozpoczęto tworzenie sekwencji...');
@@ -196,60 +190,55 @@ BEGIN
             'CREATE SEQUENCE users_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'USERS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik USERS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik USERS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE trainers_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'TRAINERS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINERS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINERS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE muscle_groups_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'MUSCLE_GROUPS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik MUSCLE_GROUPS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik MUSCLE_GROUPS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE exercises_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'EXERCISES_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik EXERCISES_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik EXERCISES_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE training_plans_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'TRAINING_PLANS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_PLANS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINING_PLANS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE personal_plans_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'PERSONAL_PLANS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik PERSONAL_PLANS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik PERSONAL_PLANS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     v_success := fn_add_sequence(
             'CREATE SEQUENCE trainer_sessions_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
             'TRAINER_SESSIONS_SEQ'
                  );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINER_SESSIONS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
-
-    v_success := fn_add_sequence(
-            'CREATE SEQUENCE weight_measurements_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
-            'WEIGHT_MEASUREMENTS_SEQ'
-                 );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik WEIGHT_MEASUREMENTS_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
-
-    v_success := fn_add_sequence(
-            'CREATE SEQUENCE weight_leaderboard_seq START WITH 1 INCREMENT BY 1 NOCACHE NOCYCLE',
-            'WEIGHT_LEADERBOARD_SEQ'
-                 );
-    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik WEIGHT_LEADERBOARD_SEQ: ' || CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
-
+    DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Wynik TRAINER_SESSIONS_SEQ: ' ||
+                         CASE WHEN v_success THEN 'OK' ELSE 'BŁĄD/ISTNIEJE' END);
 
     DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Inicjalizacja tabel i sekwencji zakończona.');
 EXCEPTION
     WHEN OTHERS THEN
-        DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Nieoczekiwany błąd w głównym bloku PRC_INITIALIZE_DATABASE: ' || SQLCODE || ' - ' || SQLERRM);
+        DBMS_OUTPUT.PUT_LINE('PRC_INITIALIZE_DATABASE: Nieoczekiwany błąd w głównym bloku PRC_INITIALIZE_DATABASE: ' ||
+                             SQLCODE || ' - ' || SQLERRM);
 END prc_initialize_database;
 /

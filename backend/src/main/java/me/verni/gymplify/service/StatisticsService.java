@@ -1,6 +1,6 @@
 package me.verni.gymplify.service;
 
-import me.verni.gymplify.dto.statistics.*;
+import me.verni.gymplify.dto.statistics.*; // Importuje wszystkie DTO z tego pakietu
 import me.verni.gymplify.exception.ResourceNotFoundException;
 import me.verni.gymplify.repository.StatisticsRepository;
 import org.slf4j.Logger;
@@ -35,7 +35,6 @@ public class StatisticsService {
         return statisticsRepository.getNewUsersByPeriod(startDate, endDate);
     }
 
-
     public Long getTotalTrainerCount() {
         logger.debug("Pobieranie całkowitej liczby trenerów");
         return statisticsRepository.getTotalTrainerCount()
@@ -52,19 +51,19 @@ public class StatisticsService {
         return statisticsRepository.getTrainerWorkloadStatsTyped();
     }
 
+    public List<ExerciseCountByMuscleGroupDto> getExerciseCountByMuscleGroup() {
+        logger.debug("Pobieranie liczby ćwiczeń wg grup mięśniowych");
+        return statisticsRepository.getExerciseCountByMuscleGroup();
+    }
+
     public List<ExercisePopularityDto> getMostPopularExercisesInPlans(int topN) {
         logger.debug("Pobieranie {} najpopularniejszych ćwiczeń w planach", topN);
         return statisticsRepository.getMostPopularExercisesInPlansTyped(topN);
     }
 
-    public List<ExercisePopularityDto> getMostPopularExercisesInLeaderboard(int topN) {
-        logger.debug("Pobieranie {} najpopularniejszych ćwiczeń w leaderboardach", topN);
-        return statisticsRepository.getMostPopularExercisesInLeaderboardTyped(topN);
-    }
-
-    public List<LeaderboardRankingDto> getLeaderboardRankingsForExercise(Long exerciseId, int topN) {
-        logger.debug("Pobieranie rankingów (top {}) dla ćwiczenia ID: {}", topN, exerciseId);
-        return statisticsRepository.getLeaderboardRankingsForExercise(exerciseId, topN);
+    public List<PopularPlanDto> getMostAssignedTrainingPlans(int topN) {
+        logger.debug("Pobieranie {} najczęściej przypisywanych planów treningowych", topN);
+        return statisticsRepository.getMostAssignedTrainingPlans(topN);
     }
 
     public List<SystemActivityCountDto> getOverallSystemActivityCounts() {
